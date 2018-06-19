@@ -37,7 +37,7 @@
 
 DECLARE_PER_CPU(struct boost_groups, cpu_boost_groups);
 static DEFINE_PER_CPU(bool, in_partition_control);
-static int is_cache_ctrl_enabled;
+static int is_cache_ctrl_enabled = 1;
 
 static int ctl_min_score = 500; // default is service adj
 module_param(ctl_min_score, int, 0600);
@@ -222,7 +222,7 @@ static inline bool is_important(struct task_struct *task)
 	int grp_id = get_stune_id(task);
 
 #ifdef CONFIG_MTK_TASK_TURBO
-	if (ctl_turbo_group && is_turbo_task(task))
+	if (ctl_turbo_group || is_turbo_task(task))
 		return true;
 #endif
 	if (ctl_suppress_group & (1 << grp_id))

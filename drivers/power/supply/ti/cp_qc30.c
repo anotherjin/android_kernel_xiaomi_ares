@@ -445,7 +445,7 @@ static int cp_enable_fc(bool enable)
 	if ((!ret) && (ch_dev)) {
 		charger_dev_enable(ch_dev, !enable);
 		if (!enable) {
-			charger_dev_set_input_current(ch_dev, 3000000);
+			charger_dev_set_input_current(ch_dev, 6000000);
 		}
 	}
 
@@ -505,9 +505,9 @@ static int cp_enable_sw(bool enable)
 		return -ENODEV;
 
 	if (enable)
-		charger_dev_set_input_current(ch_dev, 3000000);
+		charger_dev_set_input_current(ch_dev, 6000000);
 	else
-		charger_dev_set_input_current(ch_dev, 100000);
+		charger_dev_set_input_current(ch_dev, 6000000);
 
 	cp_set_bq_charge_done(enable);
 	pm_state.sw_chager.charge_enabled = enable;
@@ -536,7 +536,7 @@ static int cp_check_fc_enabled(struct cp_qc30_data *chip)
 		if ((pm_state.bq2597x.charge_enabled == 0) && (ch_dev) && (chg_consumer)) {
 			charger_dev_enable(ch_dev, !pm_state.bq2597x.charge_enabled);
 			charger_manager_enable_power_path(chg_consumer, MAIN_CHARGER, !pm_state.bq2597x.charge_enabled);
-			charger_dev_set_input_current(ch_dev, 3000000);
+			charger_dev_set_input_current(ch_dev, 6000000);
 		}
 	}
 
@@ -1041,7 +1041,7 @@ void cp_statemachine(struct cp_qc30_data *chip)
 			if (!ch_dev)
 				ch_dev = get_charger_by_name("primary_chg");
 			if (ch_dev)
-				charger_dev_set_input_current(ch_dev, 100000);
+				charger_dev_set_input_current(ch_dev, 600000);
 
 			if ((pm_state.bq2597x.vbus_volt < (pm_state.bq2597x.vbat_volt * 2 - BUS_VOLT_INIT_UP)) &&
 					(pm_state.bq2597x.vbus_volt < 8300)) {

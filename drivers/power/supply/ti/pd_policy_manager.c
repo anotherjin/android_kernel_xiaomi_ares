@@ -1487,7 +1487,8 @@ static void usb_psy_change_work(struct work_struct *work)
 		pr_debug("this is xiaomi TA and authentic is ok.\n");
 	} else if (!pdpm->pd_active
 			&& (pps_support == true)) {
-		usbpd_pps_non_verified_contact(pdpm, true);
+			usbpd_pd_contact(pdpm, true);
+		//usbpd_pps_non_verified_contact(pdpm, true);
 		pr_debug("this is commom pps TA.\n");
 	} else if (pdpm->pd_active && (pps_support == false)) {
 		usbpd_pd_contact(pdpm, false);
