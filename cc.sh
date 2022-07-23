@@ -1,12 +1,12 @@
 
-export ANDROID_MAJOR_VERSION=s
+export ANDROID_MAJOR_VERSION=R
 make O=out ARCH=arm64 ares_defconfig
 #make O=out ARCH=arm64 aresin_defconfig
 #make O=out ARCH=arm64 menuconfig
 
 #cp -r /media/jty/AEX/hamjin-config ./out/.config
 #cp -r /media/jty/AEX/hamjin-config ./out/.config.old
-PATH="/media/jty/clang/clang-r437112b/bin:/media/jty/gcc-arm64-4.9/bin:/media/jty/Desktop/gcc-arm-4.9/bin:${PATH}" \
+PATH="/home/jty/Desktop/clang/clang-r437112b/bin:/home/jty/Desktop/gcc-arm64-4.9/bin:/home/jty/Desktop/Desktop/gcc-arm-4.9/bin:${PATH}" \
 make -j$(nproc --all) O=out \
                       ARCH=arm64 \
                       CC=clang \

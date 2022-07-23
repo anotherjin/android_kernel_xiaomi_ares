@@ -327,7 +327,7 @@ int Ripi_cpu_dvfs_thread(void *data)
 				cid =
 	arch_get_cluster_id(p->mt_policy->cpu);
 #endif
-#undef MET_READY
+
 #ifdef MET_READY
 				if (cid == 0) {
 					met_tag_oneshot(0, "sched_dvfs_max_c0",

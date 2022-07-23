@@ -19,13 +19,13 @@ this file is only for attribution of ares
 &lk_charger {
 	max_charger_voltage = <14500000>;
 
-	usb_charger_current = <2000000>;
-	ac_charger_current = <2000000>;
-	ac_charger_input_current = <2000000>;
-	non_std_ac_charger_current = <2000000>;
-	charging_host_charger_current = <2000000>;
-	ta_ac_charger_current = <2000000>;
-	pd_charger_current = <6000000>;
+	usb_charger_current = <500000>;
+	ac_charger_current = <1500000>;
+	ac_charger_input_current = <1500000>;
+	non_std_ac_charger_current = <1000000>;
+	charging_host_charger_current = <1500000>;
+	ta_ac_charger_current = <1500000>;
+	pd_charger_current = <1500000>;
 
 	temp_t4_threshold = <60>;
 	temp_t3_threshold = <0>;
@@ -35,13 +35,13 @@ this file is only for attribution of ares
 &charger {
 	algorithm_name = "SwitchCharging2";
 
-	battery_cv = <5065000>;
+	battery_cv = <4460000>;
 
 	enable_vote;
 	enable_cv_step;
-	step_a = <4600000>;
-	step_b = <4700000>;
-	step_c = <4800000>;
+	step_a = <4200000>;
+	step_b = <4300000>;
+	step_c = <4400000>;
 	current_a = <8937000>;
 	current_b = <7447500>;
 	current_c = <5958000>;
@@ -132,11 +132,11 @@ this file is only for attribution of ares
 	xm_pps_dual_charger_chg2_current = <2500000>;
 	xm_pps_max_vbus = <12000000>;
 	xm_pps_max_ibus = <3000000>;
-	xm_pps_single_charger_current_non_verified_pps = <6000000>;
+	xm_pps_single_charger_current_non_verified_pps = <4800000>;
 
 	pd_vbus_upper_bound = <9000000>;
-	ac_charger_input_current = <2000000>;
-	non_std_ac_charger_current = <2000000>;
+	ac_charger_input_current = <1500000>;
+	non_std_ac_charger_current = <1000000>;
 	ac_charger_current = <2000000>;
 
 	use_xmusb350_do_apsd;

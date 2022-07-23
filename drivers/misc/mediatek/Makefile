@@ -96,7 +96,7 @@ obj-$(CONFIG_MTK_CCCI_DEVICES)	+=  ccci_util/
 obj-$(CONFIG_MTK_NET_CCMNI) +=  ccmni/
 obj-$(CONFIG_MTK_ECCCI_DRIVER) +=  eccci/
 obj-$(CONFIG_MTK_SSMR) += memory-ssmr/
-#obj-y += cache-auditor/
+obj-y += cache-auditor/
 obj-$(CONFIG_MTK_AMMS) += memory-amms/
 obj-$(CONFIG_ZONE_MOVABLE_CMA) += zone_movable_cma/
 obj-$(CONFIG_MTK_VIBRATOR) += vibrator/
@@ -161,7 +161,7 @@ obj-$(CONFIG_MTK_VOW_SUPPORT)  += vow/
 obj-y += io_boost/
 obj-y += mtprintk/
 ifneq ($(wildcard $(srctree)/drivers/misc/mediatek/met_drv/),)
-#obj-y += met_drv/
+obj-y += met_drv/
 endif
 obj-y += perf/
 obj-$(CONFIG_MTK_JPEG) += jpeg/
