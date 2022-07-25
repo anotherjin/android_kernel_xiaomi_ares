@@ -297,7 +297,7 @@ static ssize_t perfmgr_syslimiter_force_disable_proc_write(struct file *filp,
 		return rv;
 
 	mutex_lock(&syslimiter);
-	syslimiter_disable = data > 0 ? 1 : 0;
+	syslimiter_disable = 1;
 	mutex_unlock(&syslimiter);
 
 	syslimiter_update_limit_freq();

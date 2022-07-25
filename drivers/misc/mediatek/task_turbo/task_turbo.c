@@ -392,8 +392,8 @@ void cgroup_set_turbo_task(struct task_struct *p)
 
 extern void sys_set_turbo_task(struct task_struct *p)
 {
-	//if (strcmp(p->comm, RENDER_THREAD_NAME))
-	//	return;
+	if (strcmp(p->comm, RENDER_THREAD_NAME))
+		return;
 
 	if (!launch_turbo_enable())
 		return;

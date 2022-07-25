@@ -44,7 +44,7 @@ struct boost {
 
 static struct boost ktchboost;
 
-static int ktch_mgr_enable = 1;
+static int ktch_mgr_enable = 0;
 static int ktch_mgr_core = 1;
 static int ktch_mgr_freq = 1;
 static int ktch_mgr_clstr = 1;
