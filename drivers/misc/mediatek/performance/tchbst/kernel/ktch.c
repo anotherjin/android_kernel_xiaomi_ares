@@ -126,7 +126,7 @@ static ssize_t perfmgr_tb_enable_write(struct file *filp, const char *ubuf,
 		return -1;
 
 	spin_lock_irqsave(&ktchboost.touch_lock, flags);
-	ktch_mgr_enable = val;
+	ktch_mgr_enable = 0;
 	spin_unlock_irqrestore(&ktchboost.touch_lock, flags);
 
 	return cnt;

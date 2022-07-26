@@ -94,7 +94,7 @@ static long eara_thrm_ioctl(struct file *filp,
 	struct _EARA_THRM_PACKAGE smsgKM;
 
 	msgKM = &smsgKM;
-	return -1;
+
 	if (perfctl_copy_from_user(msgKM, msgUM,
 				sizeof(struct _EARA_THRM_PACKAGE))) {
 		ret = -EFAULT;
@@ -268,7 +268,7 @@ static long eara_ioctl_impl(struct file *filp,
 	struct _EARA_NN_PACKAGE smsgKM;
 
 	msgKM = (struct _EARA_NN_PACKAGE *)pKM;
-	return -1;
+
 	if (!msgKM) {
 		msgKM = &smsgKM;
 		if (perfctl_copy_from_user(msgKM, msgUM,
@@ -415,7 +415,7 @@ static long device_ioctl(struct file *filp,
 	struct _FPSGO_PACKAGE smsgKM;
 
 	msgKM = &smsgKM;
-	return -1;
+	
 	if (perfctl_copy_from_user(msgKM, msgUM,
 				sizeof(struct _FPSGO_PACKAGE))) {
 		ret = -EFAULT;
