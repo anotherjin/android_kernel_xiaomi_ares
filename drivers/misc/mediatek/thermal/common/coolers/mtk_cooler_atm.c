@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2017 MediaTek Inc.
  * Copyright (C) 2021 XiaoMi, Inc.
- *
+ * Copyright (C) 2022 github @railjty
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
@@ -454,7 +454,7 @@ static void set_adaptive_gpu_power_limit(unsigned int limit);
  *Weak functions
  *=============================================================
  */
-#if 0
+
 #ifdef ATM_USES_PPM
 void __attribute__ ((weak))
 mt_ppm_cpu_thermal_protect(unsigned int limited_power)
@@ -468,14 +468,16 @@ mt_cpufreq_thermal_protect(unsigned int limited_power)
 	pr_notice("E_WF: %s doesn't exist\n", __func__);
 }
 #endif
-#endif
+
 
 int __attribute__((weak))
 mtk_eara_thermal_pb_handle(int total_pwr_budget,
 			   int max_cpu_power, int max_gpu_power,
 			   int max_vpu_power,  int max_mdla_power)
 {
+#ifdef CONFIG_MTK_EARA_THERMAL
 	pr_notice("E_WF: %s doesn't exist\n", __func__);
+#endif
 	return 0;
 }
 
@@ -490,13 +492,13 @@ mtk_get_gpu_loading(unsigned int *pLoading)
 unsigned int  __attribute__((weak))
 mt_gpufreq_get_min_power(void)
 {
-	pr_notice("E_WF: %s doesn't exist\n", __func__);
+	//pr_notice("E_WF: %s doesn't exist\n", __func__);
 	return 0;
 }
 unsigned int  __attribute__((weak))
 mt_gpufreq_get_max_power(void)
 {
-	pr_notice("E_WF: %s doesn't exist\n", __func__);
+	//pr_notice("E_WF: %s doesn't exist\n", __func__);
 	return 0;
 }
 void __attribute__ ((weak))
@@ -2231,7 +2233,7 @@ static int adp_cpu_get_cur_state
 	/* *state = cl_dev_adp_cpu_state; */
 	return 0;
 }
-
+static unsigned int temp_cl_dev_adp_cpu_state = 0;	//add
 static int adp_cpu_set_cur_state
 (struct thermal_cooling_device *cdev, unsigned long state)
 {
@@ -2239,11 +2241,30 @@ static int adp_cpu_set_cur_state
 	unsigned int prev_active_state = cl_dev_adp_cpu_state_active;
 
 	cl_dev_adp_cpu_state[(cdev->type[13] - '0')] = state;
-
+	if(cl_dev_adp_cpu_state[0] == 1)
+	{
+		if(temp_cl_dev_adp_cpu_state == 0)
+		{
+			//保存目前cpu_adaptive_1的状态，这个时候cpu_adaptive_1 = 1
+			temp_cl_dev_adp_cpu_state = cl_dev_adp_cpu_state[1];
+		}
+		//强制将cpu_adaptive_1 = 0，则只使用cpu_adaptive_0
+		cl_dev_adp_cpu_state[1] = 0;
+	}
+	//如果cpu_adaptive_0 = 0，则表示温度已经低于到120度，或者还没有升高到120度
+	else
+	{
+		if(temp_cl_dev_adp_cpu_state == 1)
+		{
+			//如果之前cpu_adaptive_1 = 1，则将cpu_adaptive_1恢复
+			cl_dev_adp_cpu_state[1] = temp_cl_dev_adp_cpu_state;
+			temp_cl_dev_adp_cpu_state = 0;
+		}
+	}
 	/* TODO: no exit point can be obtained in mtk_ts_cpu.c */
 	ttj = decide_ttj();
 
-	/* tscpu_dprintk("adp_cpu_set_cur_state[%d] =%d, ttj=%d\n",
+	/*tscpu_dprintk("adp_cpu_set_cur_state[%d] =%d, ttj=%d\n",
 	 *				(cdev->type[13] - '0'), state, ttj);
 	 */
 

@@ -28,7 +28,7 @@
 * Version: V1.0
 *
 *****************************************************************************/
-
+#define GAME_480
 /*****************************************************************************
 * Included header files
 *****************************************************************************/
@@ -137,7 +137,7 @@ static void fts_fps_recovery(struct fts_ts_data *ts_data)
 		FTS_INFO("recovery fps to %#x fps", cmd);
 }
 
-#define ALWAYS_480
+//#define ALWAYS_480
 #ifdef ALWAYS_480
 static void fts_report_rate_480(struct fts_ts_data *ts_data) {
 	if (!fts_write_reg(0x88, 0x30))
@@ -2122,7 +2122,6 @@ static void fts_update_mode_value(int mode, u8 addr)
 		}
 	}
 }
-
 #ifdef GAME_480
 static void fts_set_report_rate(struct fts_ts_data *ts_data)
 {
