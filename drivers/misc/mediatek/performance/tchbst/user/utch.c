@@ -44,13 +44,13 @@ static ktime_t last_touch_time;
 void switch_usrtch(int enable)
 {
 	mutex_lock(&notify_lock);
-	usrtch_dbg = 1;
+	usrtch_dbg = !enable;
 	mutex_unlock(&notify_lock);
 }
 
 void switch_eas_boost(int boost_value)
 {
-	touch_boost_value = 65;
+	touch_boost_value = boost_value;
 }
 
 void switch_init_opp(int boost_opp)

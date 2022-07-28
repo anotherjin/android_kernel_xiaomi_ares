@@ -44,7 +44,7 @@ struct boost {
 
 static struct boost ktchboost;
 
-static int ktch_mgr_enable = 0;
+static int ktch_mgr_enable = 1;
 static int ktch_mgr_core = 1;
 static int ktch_mgr_freq = 1;
 static int ktch_mgr_clstr = 1;
@@ -126,7 +126,7 @@ static ssize_t perfmgr_tb_enable_write(struct file *filp, const char *ubuf,
 		return -1;
 
 	spin_lock_irqsave(&ktchboost.touch_lock, flags);
-	ktch_mgr_enable = 0;
+	ktch_mgr_enable = val;
 	spin_unlock_irqrestore(&ktchboost.touch_lock, flags);
 
 	return cnt;

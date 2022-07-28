@@ -137,7 +137,7 @@ static void fts_fps_recovery(struct fts_ts_data *ts_data)
 		FTS_INFO("recovery fps to %#x fps", cmd);
 }
 
-
+#define ALWAYS_480
 #ifdef ALWAYS_480
 static void fts_report_rate_480(struct fts_ts_data *ts_data) {
 	if (!fts_write_reg(0x88, 0x30))
@@ -1816,7 +1816,7 @@ static int check_fps(unsigned long event, void *data)
 				FTS_ERROR("fps value illegal, fps:%d", fps);
 			break;
 		}
-
+		//cmd = 0x78;
 		if (legally) {
 			fts_data->fps_cmd = cmd;
 			fts_data->last_fps_cmd = fts_data->fps_cmd;
@@ -2556,6 +2556,7 @@ static void fts_init_xiaomi_touchfeature(struct fts_ts_data *ts_data)
 	xiaomi_touch_interfaces.get_touch_y_resolution = fts_get_y_resolution;
 	fts_init_touchmode_data(ts_data);
 	xiaomitouch_register_modedata(0, &xiaomi_touch_interfaces);
+	fts_report_rate_480(ts_data);
 }
 #endif
 

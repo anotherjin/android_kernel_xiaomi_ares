@@ -88,7 +88,6 @@ static long eara_thrm_ioctl(struct file *filp,
 		unsigned int cmd, unsigned long arg)
 {
 	ssize_t ret = 0;
-	
 	struct _EARA_THRM_PACKAGE *msgKM = NULL,
 			*msgUM = (struct _EARA_THRM_PACKAGE *)arg;
 	struct _EARA_THRM_PACKAGE smsgKM;
@@ -262,13 +261,11 @@ static long eara_ioctl_impl(struct file *filp,
 		unsigned int cmd, unsigned long arg, void *pKM)
 {
 	ssize_t ret = 0;
-	
 	struct _EARA_NN_PACKAGE *msgKM = NULL,
 		*msgUM = (struct _EARA_NN_PACKAGE *)arg;
 	struct _EARA_NN_PACKAGE smsgKM;
 
 	msgKM = (struct _EARA_NN_PACKAGE *)pKM;
-
 	if (!msgKM) {
 		msgKM = &smsgKM;
 		if (perfctl_copy_from_user(msgKM, msgUM,
@@ -409,13 +406,12 @@ static long device_ioctl(struct file *filp,
 		unsigned int cmd, unsigned long arg)
 {
 	ssize_t ret = 0;
-	
 	struct _FPSGO_PACKAGE *msgKM = NULL,
 			*msgUM = (struct _FPSGO_PACKAGE *)arg;
 	struct _FPSGO_PACKAGE smsgKM;
 
 	msgKM = &smsgKM;
-	
+
 	if (perfctl_copy_from_user(msgKM, msgUM,
 				sizeof(struct _FPSGO_PACKAGE))) {
 		ret = -EFAULT;
