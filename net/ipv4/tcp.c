@@ -2513,7 +2513,7 @@ static int do_tcp_setsockopt(struct sock *sk, int level,
 	struct net *net = sock_net(sk);
 	int val;
 	int err = 0;
-
+	
 	/* These are data/string values, all the others are ints */
 	switch (optname) {
 	case TCP_CONGESTION: {
@@ -2565,7 +2565,22 @@ static int do_tcp_setsockopt(struct sock *sk, int level,
 		return -EFAULT;
 
 	lock_sock(sk);
-
+	
+	/* Hack optname to use TCP_NODELAY for everything */
+	if (val) {
+	/* TCP_NODELAY is weaker than TCP_CORK, so that
+	 * this option on corked socket is remembered, but
+	 * it is not activated until cork is cleared.
+	 *
+	 * However, when TCP_NODELAY is set we make
+	 * an explicit push, which overrides even TCP_CORK
+	 * for currently queued segments.
+	 */
+		tp->nonagle |= TCP_NAGLE_OFF|TCP_NAGLE_PUSH;
+		tcp_push_pending_frames(sk);
+	} else {
+		tp->nonagle &= ~TCP_NAGLE_OFF;
+	}
 	switch (optname) {
 	case TCP_MAXSEG:
 		/* Values greater than interface MTU won't take effect. However
