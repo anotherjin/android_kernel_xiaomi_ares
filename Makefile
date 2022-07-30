@@ -483,7 +483,7 @@ endif
 ifeq ($(cc-name),clang)
 ifneq ($(CROSS_COMPILE),)
 CLANG_TRIPLE	?= $(CROSS_COMPILE)
-CLANG_FLAGS	+= --target=$(notdir $(CLANG_TRIPLE:%-=%)) -mcpu=cortex-a78.cortex-a55 -mtune=cortex-a78.cortex-a55 
+CLANG_FLAGS	+= --target=$(notdir $(CLANG_TRIPLE:%-=%)) -mcpu=cortex-a55 -mtune=cortex-a55
 ifeq ($(shell $(srctree)/scripts/clang-android.sh $(CC) $(CLANG_FLAGS)), y)
 $(error "Clang with Android --target detected. Did you specify CLANG_TRIPLE?")
 endif
@@ -672,6 +672,20 @@ ARCH_AFLAGS :=
 ARCH_CFLAGS :=
 include arch/$(SRCARCH)/Makefile
 
+CL_FLAGS += -O3 -mcpu=cortex-a55+crypto+crc+simd+fp
+GC_FLAGS += -O3 -mcpu=cortex-a78.cortex-a55+crypto+crc+simd +fp
+
+ifeq ($(cc-name),gcc)
+KBUILD_CFLAGS  += $(GC_FLAGS)
+KBUILD_AFLAGS  += $(GC_FLAGS)
+KBUILD_LDFLAGS += $(GC_FLAGS)
+endif
+ifeq ($(cc-name),clang)
+KBUILD_CFLAGS  += $(CL_FLAGS)
+KBUILD_AFLAGS  += $(CL_FLAGS)
+KBUILD_LDFLAGS += $(CL_FLAGS)
+endif
+
 KBUILD_CFLAGS	+= $(call cc-option,-fno-delete-null-pointer-checks,)
 KBUILD_CFLAGS	+= $(call cc-disable-warning,frame-address,)
 KBUILD_CFLAGS	+= $(call cc-disable-warning, format-truncation)
@@ -683,7 +697,7 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, attribute-alias)
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS   += -Os
 else
-KBUILD_CFLAGS   += -Ofast
+KBUILD_CFLAGS   += -O3
 endif
 
 # Tell gcc to never replace conditional load with a non-conditional one
@@ -753,7 +767,7 @@ endif
 KBUILD_CFLAGS += $(call cc-disable-warning, unused-but-set-variable)
 
 ifeq ($(ld-name),lld)
-LDFLAGS += -O2
+LDFLAGS += -O3
 endif
 
 KBUILD_CFLAGS += $(call cc-disable-warning, unused-const-variable)
@@ -934,11 +948,11 @@ KBUILD_CFLAGS	+= $(call cc-option,-fno-strict-overflow)
 # clang sets -fmerge-all-constants by default as optimization, but this
 # is non-conforming behavior for C and in fact breaks the kernel, so we
 # need to disable it here generally.
-KBUILD_CFLAGS	+= $(call cc-option,-fno-merge-all-constants)
+#KBUILD_CFLAGS	+= $(call cc-option,-fno-merge-all-constants)
 
 # for gcc -fno-merge-all-constants disables everything, but it is fine
 # to have actual conforming behavior enabled.
-KBUILD_CFLAGS	+= $(call cc-option,-fmerge-constants)
+#KBUILD_CFLAGS	+= $(call cc-option,-fmerge-constants)
 
 # Make sure -fstack-check isn't enabled (like gentoo apparently did)
 KBUILD_CFLAGS  += $(call cc-option,-fno-stack-check,)
