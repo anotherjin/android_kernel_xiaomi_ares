@@ -194,10 +194,18 @@ struct tcp_bbr_info {
 	__u32	bbr_pacing_gain;	/* pacing gain shifted left 8 bits */
 	__u32	bbr_cwnd_gain;		/* cwnd gain shifted left 8 bits */
 };
-
+struct tcp_bbr_plus_info {
+	/* u64 bw: max-filtered BW (app throughput) estimate in Byte per sec: */
+	__u32	bbr_plus_bw_lo;		/* lower 32 bits of bw */
+	__u32	bbr_plus_bw_hi;		/* upper 32 bits of bw */
+	__u32	bbr_plus_min_rtt;		/* min-filtered RTT in uSec */
+	__u32	bbr_plus_pacing_gain;	/* pacing gain shifted left 8 bits */
+	__u32	bbr_plus_cwnd_gain;		/* cwnd gain shifted left 8 bits */
+};
 union tcp_cc_info {
-	struct tcpvegas_info	vegas;
-	struct tcp_dctcp_info	dctcp;
-	struct tcp_bbr_info	bbr;
+	struct tcpvegas_info		vegas;
+	struct tcp_dctcp_info		dctcp;
+	struct tcp_bbr_info		bbr;
+	struct tcp_bbr_plus_info	bbr_plus;
 };
 #endif /* _UAPI_INET_DIAG_H_ */
