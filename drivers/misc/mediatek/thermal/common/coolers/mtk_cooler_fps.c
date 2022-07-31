@@ -168,14 +168,14 @@ enum {
 	GAS_CATEGORY_OTHERS,
 };
 #endif
-
+#ifdef CONFIG_MTK_FB
 int __attribute__ ((weak))
 disp_mgr_get_session_info(struct disp_session_info *info)
 {
 	pr_notice("E_WF: %s doesn't exist\n", __func__);
 	return 0;
 }
-
+#endif
 unsigned long  __attribute__ ((weak))
 ged_query_info(GED_INFO eType)
 {

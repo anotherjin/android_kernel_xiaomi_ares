@@ -29,7 +29,6 @@
 #include <mt-plat/charger_class.h>
 #include <mt-plat/mtk_charger.h>
 
-#define pr_debug pr_err
 #define PD_SRC_PDO_TYPE_FIXED		0
 #define PD_SRC_PDO_TYPE_BATTERY		1
 #define PD_SRC_PDO_TYPE_VARIABLE	2

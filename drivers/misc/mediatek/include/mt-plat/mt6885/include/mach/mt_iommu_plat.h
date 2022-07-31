@@ -232,7 +232,7 @@ static inline unsigned int iommu_get_field_by_mask(
 #define F_READ_ENTRY_MMx_MAIN(id)       F_BIT_SET(27+id)
 #define F_READ_ENTRY_PFH		F_BIT_SET(26)
 #define F_READ_ENTRY_MAIN_IDX(mmu, idx)     \
-	F_VAL(idx, 19 + mmu * 6, 14 + mmu * 6)
+	F_VAL(idx, (19 + mmu * 6), (14 + mmu * 6) )
 #define F_READ_ENTRY_PFH_IDX(idx)       F_VAL(idx, 11, 5)
 #define F_READ_ENTRY_PFH_PAGE_IDX(idx)    F_VAL(idx, 4, 2)
 #define F_READ_ENTRY_PFH_WAY(way)       F_VAL(way, 1, 0)

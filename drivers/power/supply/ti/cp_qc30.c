@@ -56,7 +56,7 @@
 #include <mt-plat/mtk_charger.h>
 
 #include "cp_qc30.h"
-#define pr_debug pr_err
+
 #define BATT_MAX_CHG_VOLT		4450
 #define BATT_FAST_CHG_CURR		5400
 #define	BUS_OVP_THRESHOLD		12000

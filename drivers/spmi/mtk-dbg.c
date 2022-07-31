@@ -1520,7 +1520,7 @@ static char *get_spmimst_all_reg_dump(void)
 		if (i % 8 == 0)
 			log_size += sprintf(wp + log_size, "\n[SPMI] ");
 	}
-#if SPMI_RCS_SUPPORT
+#ifdef SPMI_RCS_SUPPORT
 	offset = arb->spmimst_regs[SPMI_DEC_DBG];
 	tmp_dat = readl(arb->spmimst_base + offset);
 	log_size += sprintf(wp + log_size, "(0x%x)=0x%x ", offset, tmp_dat);
@@ -1596,9 +1596,9 @@ static void spmi_dump_pmif_all_reg_d(struct seq_file *m)
 void spmi_dump_pmif_record_reg(void)
 {
 	struct pmif *arb = spmi_controller_get_drvdata(dbg_ctrl);
-	unsigned int i = 0, step, offset, tmp_dat;
-	unsigned int chan, cmd, is_write, slvid, bytecnt, addr;
-	unsigned int wd_31_0, log_size = 0;
+	unsigned long long i = 0, step, offset, tmp_dat;
+	unsigned long long chan, cmd, is_write, slvid, bytecnt, addr;
+	unsigned long long wd_31_0, log_size = 0;
 
 	step = arb->dbgregs[PMIF_MONITOR_RECORD_1_0] -
 		arb->dbgregs[PMIF_MONITOR_RECORD_0_0];
@@ -1607,12 +1607,12 @@ void spmi_dump_pmif_record_reg(void)
 	for (i = 0; i < 32; i++) {
 		offset = arb->dbgregs[PMIF_MONITOR_RECORD_0_0] + i * step;
 		tmp_dat = readl(arb->base + offset);
-		chan = (tmp_dat & (0xf8 << 27)) >> 27;
-		cmd = (tmp_dat & (0x3 << 25)) >> 25;
-		is_write = (tmp_dat & (0x1 << 24)) >> 24;
-		slvid = (tmp_dat & (0xf << 20)) >> 20;
-		bytecnt = (tmp_dat & (0xf << 16)) >> 16;
-		addr = (tmp_dat & (0xffff << 0)) >> 0;
+		chan = (tmp_dat & (0xf8ULL << 27)) >> 27;
+		cmd = (tmp_dat & (0x3ULL << 25)) >> 25;
+		is_write = (tmp_dat & (0x1ULL << 24)) >> 24;
+		slvid = (tmp_dat & (0xfULL << 20)) >> 20;
+		bytecnt = (tmp_dat & (0xfULL << 16)) >> 16;
+		addr = (tmp_dat & (0xffffULL << 0)) >> 0;
 
 		offset = arb->dbgregs[PMIF_MONITOR_RECORD_0_1] + i * step;
 		wd_31_0 = readl(arb->base + offset);
