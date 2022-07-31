@@ -790,9 +790,10 @@ extern void untrack_pfn_moved(struct vm_area_struct *vma);
 #endif
 
 #ifdef CONFIG_UKSM
+extern unsigned long zero_pfn __read_mostly;
+extern unsigned long uksm_zero_pfn __read_mostly;
 static inline int is_uksm_zero_pfn(unsigned long pfn)
 {
-	extern unsigned long uksm_zero_pfn;
 	return pfn == uksm_zero_pfn;
 }
 #else
@@ -805,7 +806,6 @@ static inline int is_uksm_zero_pfn(unsigned long pfn)
 #ifdef __HAVE_COLOR_ZERO_PAGE
 static inline int is_zero_pfn(unsigned long pfn)
 {
-	extern unsigned long zero_pfn;
 	unsigned long offset_from_zero_pfn = pfn - zero_pfn;
 	return offset_from_zero_pfn <= (zero_page_mask >> PAGE_SHIFT) || is_uksm_zero_pfn(pfn);
 }
@@ -815,13 +815,11 @@ static inline int is_zero_pfn(unsigned long pfn)
 #else
 static inline int is_zero_pfn(unsigned long pfn)
 {
-	extern unsigned long zero_pfn;
 	return (pfn == zero_pfn) || (is_uksm_zero_pfn(pfn));
 }
 
 static inline unsigned long my_zero_pfn(unsigned long addr)
 {
-	extern unsigned long zero_pfn;
 	return zero_pfn;
 }
 #endif
