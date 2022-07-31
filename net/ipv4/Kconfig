@@ -692,7 +692,7 @@ config TCP_CONG_BBR_PLUS
 	signal. It requires the fq ("Fair Queue") pacing packet scheduler.
 choice
 	prompt "Default TCP congestion control"
-	default DEFAULT_BIC
+	default DEFAULT_BBR_PLUS
 	help
 	  Select the TCP congestion control that will be used by default
 	  for all connections.

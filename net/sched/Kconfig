@@ -275,6 +275,7 @@ config NET_SCH_FQ_CODEL
 
 config NET_SCH_FQ
 	tristate "Fair Queue"
+	default y
 	help
 	  Say Y here if you want to use the FQ packet scheduling algorithm.
 
@@ -367,7 +368,7 @@ if NET_SCH_DEFAULT
 
 choice
 	prompt "Default queuing discipline"
-	default DEFAULT_PFIFO_FAST
+	default DEFAULT_FQ
 	help
 	  Select the queueing discipline that will be used by default
 	  for all network devices.
