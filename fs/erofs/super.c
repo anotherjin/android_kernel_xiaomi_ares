@@ -228,7 +228,7 @@ static unsigned int erofs_get_fault_rate(struct erofs_sb_info *sbi)
 	return 0;
 }
 #endif
-
+#ifdef CONFIG_EROFS_FS_ZIP
 static int handle_decompcache_args(struct erofs_sb_info *sbi,
 				   substring_t *args)
 {
@@ -251,7 +251,7 @@ static int handle_decompcache_args(struct erofs_sb_info *sbi,
 #endif
 	return 0;
 }
-
+#endif
 static void default_options(struct erofs_sb_info *sbi)
 {
 	/* set up some FS parameters */

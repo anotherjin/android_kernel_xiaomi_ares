@@ -152,6 +152,7 @@ endchoice
 config EROFS_FS_HUAWEI_EXTENSION
 	bool "EROFS HUAWEI Extension"
 	depends on EROFS_FS && EROFS_FS_ZIP
+	default y
 	help
 	  Targeted optimizations for HUAWEI Mobile phone.
 
