@@ -946,7 +946,7 @@ EXPORT_SYMBOL(mtk_emimpu_md_handling_register);
 int mtk_emimpu_register_callback(
 	irqreturn_t (*debug_dump)
 	(unsigned int emi_id, struct reg_info_t *dump, unsigned int len))
-{
+{	int *tmp;
 	struct emimpu_callbacks *mpucb;
 
 	if (!debug_dump) {
@@ -957,8 +957,8 @@ int mtk_emimpu_register_callback(
 	mpucb = kmalloc(sizeof(struct emimpu_callbacks), GFP_KERNEL);
 	if (!mpucb)
 		return -ENOMEM;
-
-	mpucb->owner = (int)__builtin_return_address(0);
+	tmp=__builtin_return_address(0);
+	mpucb->owner = *tmp;
 	mpucb->debug_dump = debug_dump;
 	mpucb->handled = false;
 

@@ -1634,17 +1634,18 @@ void spmi_dump_pmif_record_reg(void)
 static void spmi_dump_pmif_record_reg_d(struct seq_file *m)
 {
 	struct pmif *arb = spmi_controller_get_drvdata(dbg_ctrl);
-	unsigned int i = 0, step, offset, tmp_dat;
-	unsigned int chan, cmd, is_write, slvid, bytecnt, addr;
-	unsigned int wd_31_0;
+	unsigned long long i = 0, step, offset, tmp_dat;
+	unsigned long long chan, cmd, is_write, slvid, bytecnt, addr;
+	unsigned long long wd_31_0;
 
 	step = arb->dbgregs[PMIF_MONITOR_RECORD_1_0] -
 		arb->dbgregs[PMIF_MONITOR_RECORD_0_0];
-
+	unsigned long long t=0xf8;
+	t = t << 27;
 	for (i = 0; i < 32; i++) {
 		offset = arb->dbgregs[PMIF_MONITOR_RECORD_0_0] + i * step;
 		tmp_dat = readl(arb->base + offset);
-		chan = (tmp_dat & (0xf8 << 27)) >> 27;
+		chan = (tmp_dat & (t)) >> 27;
 		cmd = (tmp_dat & (0x3 << 25)) >> 25;
 		is_write = (tmp_dat & (0x1 << 24)) >> 24;
 		slvid = (tmp_dat & (0xf << 20)) >> 20;
