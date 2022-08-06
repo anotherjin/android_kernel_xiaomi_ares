@@ -31,7 +31,7 @@ int init_boostctrl(struct proc_dir_entry *parent)
 
 	dram_ctrl_init(bstctrl_root);
 
-	eas_ctrl_init(bstctrl_root);
+	//eas_ctrl_init(bstctrl_root);
 
 	return 0;
 }
