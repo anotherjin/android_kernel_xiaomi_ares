@@ -1779,7 +1779,7 @@ bool set_uclamp;
 
 void set_sched_rotation_enable(bool enable)
 {
-	sysctl_sched_rotation_enable = enable;
+	sysctl_sched_rotation_enable = false;
 }
 
 bool is_min_capacity_cpu(int cpu)
