@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -100,11 +101,8 @@ static atomic_t g_aal_force_enable_irq = ATOMIC_INIT(0);
 static atomic_t g_led_mode = ATOMIC_INIT(MT65XX_LED_MODE_NONE);
 static atomic_t g_aal_force_relay = ATOMIC_INIT(0);
 static atomic_t g_aal_eof_irq = ATOMIC_INIT(0);
-static atomic_t g_aal1_eof_irq = ATOMIC_INIT(0);
-static atomic_t g_aal_first_frame = ATOMIC_INIT(1);
-static atomic_t g_aal1_first_frame = ATOMIC_INIT(1);
+static atomic_t g_aal_first_frame = ATOMIC_INIT(0);
 static struct workqueue_struct *aal_flip_wq;
-static struct workqueue_struct *aal_refresh_wq;
 
 enum AAL_UPDATE_HIST {
 	UPDATE_NONE = 0,
@@ -190,10 +188,8 @@ struct mtk_disp_aal {
 	atomic_t is_clock_on;
 	const struct mtk_disp_aal_data *data;
 	struct work_struct aal_flip_task;
-	struct work_struct aal_refresh_task;
 };
 static struct mtk_disp_aal *g_aal_data;
-static struct mtk_disp_aal *g_aal1_data;
 
 static inline struct mtk_disp_aal *comp_to_aal(struct mtk_ddp_comp *comp)
 {
@@ -443,7 +439,7 @@ void disp_aal_refresh_by_kernel(void)
 			if (atomic_read(&g_aal_data->is_clock_on) != 1)
 				AALFLOW_LOG("aal clock is off\n");
 			else if (isDualPQ && atomic_read(&g_aal1_data->is_clock_on) != 1)
-				AALFLOW_LOG("aal1 clock is off\n");
+				AALFLOW_LOG("aal clock is off\n");
 			else
 				disp_aal_set_interrupt(NULL, true);
 			spin_unlock_irqrestore(&g_aal_clock_lock, clockflags);
@@ -464,8 +460,11 @@ void disp_aal_notify_backlight_changed(int trans_backlight)
 	disp_aal_notify_backlight_log(trans_backlight);
 	//disp_aal_exit_idle(__func__, 1);
 
-	if (trans_backlight > g_max_backlight)
-		trans_backlight = g_max_backlight;
+	// FIXME
+	//max_backlight = disp_pwm_get_max_backlight(DISP_PWM0);
+	max_backlight = 1024;
+	if (bl_1024 > max_backlight)
+		bl_1024 = max_backlight;
 
 	atomic_set(&g_aal_backlight_notified, trans_backlight);
 
@@ -591,15 +590,6 @@ static void mtk_crtc_user_cmd_work(struct work_struct *work_item)
 {
 
 	mtk_crtc_user_cmd(g_aal_data->crtc, default_comp, FLIP_SRAM, NULL);
-	mtk_crtc_check_trigger(default_comp->mtk_crtc, true, true);
-
-	AALFLOW_LOG("end");
-}
-
-static void mtk_disp_aal_refresh_trigger(struct work_struct *work_item)
-{
-	AALFLOW_LOG("start");
-
 	mtk_crtc_check_trigger(default_comp->mtk_crtc, true, true);
 
 	AALFLOW_LOG("end");
@@ -763,7 +753,7 @@ static void mtk_aal_init(struct mtk_ddp_comp *comp,
 		atomic_set(&g_aal_eof_irq, 0);
 		atomic_set(&g_aal0_hist_available, 0);
 	}
-
+	atomic_set(&g_aal_eof_irq, 0);
 	atomic_set(&aal_data->dirty_frame_retrieved, 1);
 	AALFLOW_LOG("led mode: %d-\n", atomic_read(&g_led_mode));
 }
@@ -848,7 +838,8 @@ static bool disp_aal_read_single_hist(struct mtk_ddp_comp *comp)
 	bool read_success = true;
 	int i;
 
-	if (((comp->id == DDP_COMPONENT_AAL0) && (atomic_read(&g_aal_eof_irq) == 0)) ||
+	if (((comp->id == DDP_COMPONENT_AAL0) && (((comp->id == DDP_COMPONENT_AAL0) && (atomic_read(&g_aal_eof_irq) == 0)) ||
+		((comp->id == DDP_COMPONENT_AAL1) && (atomic_read(&g_aal1_eof_irq) == 0)))) ||
 		((comp->id == DDP_COMPONENT_AAL1) && (atomic_read(&g_aal1_eof_irq) == 0)))
 		return false;
 
@@ -920,7 +911,6 @@ static int disp_aal_copy_hist_to_user(struct DISP_AAL_HIST *hist)
 	g_aal_hist.ess_enable = g_aal_ess_en;
 	g_aal_hist.dre_enable = g_aal_dre_en;
 
-	g_aal_hist.serviceFlags = 0;
 	atomic_set(&g_aal0_hist_available, 0);
 	atomic_set(&g_aal1_hist_available, 0);
 
@@ -937,6 +927,8 @@ static int disp_aal_copy_hist_to_user(struct DISP_AAL_HIST *hist)
 	ret = copy_to_user(AAL_U32_PTR(g_aal_init_dre30.dre30_hist_addr),
 		&g_aal_dre30_hist_db, sizeof(g_aal_dre30_hist_db));
 #endif
+
+	g_aal_hist.serviceFlags = 0;
 
 	AALFLOW_LOG("%s set g_aal_force_enable_irq to 0 +\n", __func__);
 	atomic_set(&g_aal_force_enable_irq, 0);
@@ -2496,7 +2488,6 @@ static void mtk_aal_prepare(struct mtk_ddp_comp *comp)
 	struct mtk_disp_aal *aal_data = comp_to_aal(comp);
 	bool first_restore = (atomic_read(&aal_data->is_clock_on) == 0);
 
-	AALFLOW_LOG("\n");
 	mtk_ddp_comp_clk_prepare(comp);
 	atomic_set(&aal_data->is_clock_on, 1);
 	if (comp->id == DDP_COMPONENT_AAL0)
@@ -2616,6 +2607,7 @@ int mtk_aal_io_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 			spin_unlock_irqrestore(&g_aal_clock_lock, flags);
 		}
 	}
+	AALFLOW_LOG("end\n");
 	return 0;
 }
 

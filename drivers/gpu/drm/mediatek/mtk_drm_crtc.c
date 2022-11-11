@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -64,6 +65,7 @@
 /* *****Panel_Master*********** */
 #include "mtk_fbconfig_kdebug.h"
 #include "mtk_layering_rule_base.h"
+#include "mi_disp/mi_disp_feature.h"
 
 static struct mtk_drm_property mtk_crtc_property[CRTC_PROP_MAX] = {
 	{DRM_MODE_PROP_ATOMIC, "OVERLAP_LAYER_NUM", 0, UINT_MAX, 0},
@@ -694,7 +696,7 @@ static void bl_cmdq_cb(struct cmdq_cb_data data)
 int mtk_drm_setbacklight(struct drm_crtc *crtc, unsigned int level)
 {
 	struct mtk_drm_crtc *mtk_crtc = to_mtk_crtc(crtc);
-	struct cmdq_pkt *cmdq_handle;
+	struct cmdq_pkt *cmdq_handle = NULL;
 	struct mtk_ddp_comp *comp = mtk_ddp_comp_request_output(mtk_crtc);
 	struct mtk_cmdq_cb_data *cb_data;
 	static unsigned int bl_cnt;
@@ -704,18 +706,26 @@ int mtk_drm_setbacklight(struct drm_crtc *crtc, unsigned int level)
 	if (m_new_pq_persist_property[DISP_PQ_CCORR_SILKY_BRIGHTNESS])
 		sb_backlight = level;
 
+	DDPINFO("%s:%d, backlight level= %d\n", __func__, __LINE__, level);
 	CRTC_MMP_EVENT_START(index, backlight, (unsigned long)crtc,
 			level);
 
-	DDP_MUTEX_LOCK(&mtk_crtc->lock, __func__, __LINE__);
-
 	if (!(mtk_crtc->enabled)) {
 		DDPINFO("Sleep State set backlight stop --crtc not ebable\n");
-		mutex_unlock(&mtk_crtc->lock);
 		CRTC_MMP_EVENT_END(index, backlight, 0, 0);
 
 		return -EINVAL;
 	}
+
+	/* set backlight */
+	if (comp->funcs && comp->funcs->io_cmd) {
+		comp->funcs->io_cmd(comp, NULL, MI_DSI_SET_BL, &level);
+		CRTC_MMP_EVENT_END(index, backlight, (unsigned long)crtc,
+				level);
+		return 0;
+	}
+
+	DDP_MUTEX_LOCK(&mtk_crtc->lock, __func__, __LINE__);
 
 	if (!comp) {
 		DDPINFO("%s no output comp\n", __func__);
@@ -1068,6 +1078,84 @@ int mtk_drm_crtc_hbm_wait(struct drm_crtc *crtc, bool en)
 	wait = false;
 	comp->funcs->io_cmd(comp, NULL, DSI_HBM_SET_WAIT_STATE, &wait);
 
+	return 0;
+}
+
+int mtk_drm_crtc_set_fps_switch_mode(void)
+{
+	struct drm_crtc *crtc = mtkfb_get_drmcrtc();
+	struct mtk_drm_crtc *mtk_crtc = to_mtk_crtc(crtc);
+	struct mtk_ddp_comp *comp = mtk_ddp_comp_request_output(mtk_crtc);
+	struct cmdq_pkt *cmdq_handle;
+	bool is_frame_mode;
+	bool state = false;
+
+	if (!(comp && comp->funcs && comp->funcs->io_cmd))
+		return -EINVAL;
+
+	if (!(mtk_crtc->enabled)) {
+		DDPINFO("%s: skip, slept\n", __func__);
+		return -EINVAL;
+	}
+
+	mtk_drm_idlemgr_kick(__func__, crtc, 0);
+
+	is_frame_mode = mtk_crtc_is_frame_trigger_mode(&mtk_crtc->base);
+	cmdq_handle =
+		cmdq_pkt_create(mtk_crtc->gce_obj.client[CLIENT_DSI_CFG]);
+
+	mtk_crtc_wait_frame_done(mtk_crtc, cmdq_handle, DDP_FIRST_PATH, 0);
+
+	if (is_frame_mode) {
+		cmdq_pkt_clear_event(cmdq_handle,
+				mtk_crtc->gce_obj.event[EVENT_STREAM_BLOCK]);
+		cmdq_pkt_wfe(cmdq_handle,
+				mtk_crtc->gce_obj.event[EVENT_CABC_EOF]);
+		cmdq_pkt_clear_event(cmdq_handle,
+				mtk_crtc->gce_obj.event[EVENT_STREAM_DIRTY]);
+	}
+
+	comp->funcs->io_cmd(comp, cmdq_handle, DSI_FPS_SWITCH_MODE_SET, &state);
+
+	if (is_frame_mode) {
+		cmdq_pkt_set_event(cmdq_handle,
+				mtk_crtc->gce_obj.event[EVENT_CABC_EOF]);
+		cmdq_pkt_clear_event(cmdq_handle,
+				mtk_crtc->gce_obj.event[EVENT_STREAM_BLOCK]);
+	}
+
+	cmdq_pkt_flush(cmdq_handle);
+	cmdq_pkt_destroy(cmdq_handle);
+
+	return 0;
+}
+
+int mtk_drm_crtc_fps_switch_mode_wait(void)
+{
+	struct drm_crtc *crtc = mtkfb_get_drmcrtc();
+	struct mtk_panel_params *panel_ext = mtk_drm_get_lcm_ext_params(crtc);
+	struct mtk_drm_crtc *mtk_crtc = to_mtk_crtc(crtc);
+	struct mtk_ddp_comp *comp = mtk_ddp_comp_request_output(mtk_crtc);
+	unsigned int wait_count = 0;
+
+	if (!(comp && comp->funcs && comp->funcs->io_cmd))
+		return -EINVAL;
+
+	if (!panel_ext)
+		return -EINVAL;
+
+	wait_count = panel_ext->fps_switch_en_time;
+
+	DDPINFO("LCM fps switch mode wait %u-TE\n", wait_count);
+
+	while (wait_count) {
+		mtk_drm_idlemgr_kick(__func__, crtc, 0);
+		wait_count--;
+		DDPINFO("LCM fps switch mode wait begin\n", wait_count);
+		comp->funcs->io_cmd(comp, NULL, DSI_FPS_SWITCH_MODE_WAIT, NULL);
+		DDPINFO("LCM fps switch mode wait end\n", wait_count);
+	}
+	DDPINFO("LCM fps switch mode wait %u-TE, end\n", wait_count);
 	return 0;
 }
 
@@ -2368,7 +2456,7 @@ static void mtk_crtc_disp_mode_switch_begin(struct drm_crtc *crtc,
 #endif
 	/* Check if disp_mode_idx change */
 	if (old_mtk_state->prop_val[CRTC_PROP_DISP_MODE_IDX] ==
-		mtk_state->prop_val[CRTC_PROP_DISP_MODE_IDX])
+		mtk_state->prop_val[CRTC_PROP_DISP_MODE_IDX] || mtk_state->prop_val[CRTC_PROP_DOZE_ACTIVE])
 		return;
 
 	DDPMSG("%s no delay from %u to %u\n", __func__,
@@ -4719,8 +4807,9 @@ void mtk_drm_crtc_enable(struct drm_crtc *crtc)
 
 #ifdef MTK_DRM_ESD_SUPPORT
 	/* 12. enable ESD check */
-	if (mtk_drm_lcm_is_connect())
+	if (mtk_drm_lcm_is_connect() && !mtk_state->prop_val[CRTC_PROP_DOZE_ACTIVE]) {
 		mtk_disp_esd_check_switch(crtc, true);
+	}
 #endif
 
 	/* 13. enable fake vsync if need*/
@@ -5627,8 +5716,9 @@ void mtk_drm_layer_dispatch_to_dual_pipe(
 
 	/*right path*/
 
-	plane_state_r->comp_state.comp_id =
-		dual_pipe_comp_mapping(plane_state->comp_state.comp_id);
+	if (plane_state->comp_state.comp_id)
+		plane_state_r->comp_state.comp_id =
+			dual_pipe_comp_mapping(plane_state->comp_state.comp_id);
 	plane_state_r->pending.width +=
 		plane_state_r->pending.dst_x - (roi_w - right_bg);
 
@@ -5708,6 +5798,7 @@ void mtk_drm_crtc_plane_update(struct drm_crtc *crtc, struct drm_plane *plane,
 		if (mtk_crtc->is_dual_pipe) {
 			struct mtk_plane_state plane_state_l;
 			struct mtk_plane_state plane_state_r;
+			struct mtk_ddp_comp *ovl_comp;
 
 			if ((plane_state->comp_state.comp_id == 0) && comp)
 				plane_state->comp_state.comp_id = comp->id;
@@ -5724,9 +5815,9 @@ void mtk_drm_crtc_plane_update(struct drm_crtc *crtc, struct drm_plane *plane,
 				__func__, comp->id,
 				plane_state_r.comp_state.comp_id);
 
-			comp = mtk_crtc_get_plane_comp(crtc, &plane_state_l);
+			ovl_comp = mtk_crtc_get_plane_comp(crtc, &plane_state_l);
 
-			mtk_ddp_comp_layer_config(comp, plane_index, &plane_state_l,
+			mtk_ddp_comp_layer_config(ovl_comp, plane_index, &plane_state_l,
 						  cmdq_handle);
 		} else {
 			comp = mtk_crtc_get_plane_comp(crtc, plane_state);
@@ -9316,4 +9407,3 @@ bool mtk_drm_get_hdr_property(void)
 {
 	return hdr_en;
 }
-
