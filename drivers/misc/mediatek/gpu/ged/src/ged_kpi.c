@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -117,6 +118,7 @@ struct GED_KPI_HEAD {
 
 	int target_fps;
 	int target_fps_margin;
+	int eara_tfps_diff;
 	int t_cpu_target;
 	int t_gpu_target;
 	int t_cpu_fpsgo;
@@ -201,6 +203,7 @@ struct GED_KPI {
 	int gpu_done_interval;
 
 	int target_fps_margin;
+	int eara_tfps_diff;
 	int if_fallback_to_ft;
 
 	unsigned long long t_cpu_slptime;
@@ -1120,6 +1123,7 @@ static GED_BOOL ged_kpi_update_TargetTimeAndTargetFps(
 	struct GED_KPI_HEAD *psHead,
 	int target_fps,
 	int target_fps_margin,
+	int eara_tfps_diff,
 	int cpu_time,
 	GED_KPI_FRC_MODE_TYPE mode,
 	int client)
@@ -1159,10 +1163,27 @@ static GED_BOOL ged_kpi_update_TargetTimeAndTargetFps(
 			target_fps = target_fps_4_main_head;
 		psHead->target_fps = target_fps;
 		psHead->target_fps_margin = target_fps_margin;
+		psHead->eara_tfps_diff = eara_tfps_diff;
 		psHead->t_cpu_fpsgo = cpu_time;
 		psHead->t_cpu_target = GED_KPI_SEC_DIVIDER/target_fps;
 		psHead->t_gpu_target = psHead->t_cpu_target;
 		psHead->frc_client = client;
+
+		/* Check PID of target_fps GiFT required matched*/
+		if (main_head == psHead && psHead->pid == g_psMEOW->target_pid)
+			g_psMEOW->target_fps = target_fps + target_fps_margin;
+		else
+			g_psMEOW->target_fps = -1;
+
+#ifdef GED_KPI_DEBUG
+		GED_LOGE("[GED_KPI] FPSGo info PID:%d ,tfps:%d, fps_margin:%d",
+		"eara_diff:%d, cpu_time:%d\n",
+		psHead->pid,
+		psHead->target_fps,
+		psHead->target_fps_margin,
+		psHead->eara_tfps_diff,
+		psHead->t_cpu_fpsgo);
+#endif /* GED_KPI_DEBUG */
 		ret = GED_TRUE;
 	}
 #ifdef GED_KPI_DEBUG
@@ -1269,6 +1290,8 @@ static void ged_kpi_work_cb(struct work_struct *psWork)
 	u64 ulID;
 	unsigned long long phead_last1;
 	int target_FPS;
+	int eara_tfps_diff;
+
 #ifdef GED_ENABLE_TIMER_BASED_DVFS_MARGIN
 	unsigned long ulIRQFlags;
 #endif /* GED_ENABLE_TIMER_BASED_DVFS_MARGIN */
@@ -1337,7 +1360,7 @@ static void ged_kpi_work_cb(struct work_struct *psWork)
 				ged_kpi_update_TargetTimeAndTargetFps(
 					psHead,
 					GED_KPI_MAX_FPS,
-					GED_KPI_DEFAULT_FPS_MARGIN, 0,
+					GED_KPI_DEFAULT_FPS_MARGIN, 0, 0,
 					GED_KPI_FRC_DEFAULT_MODE, -1);
 				ged_kpi_set_gift_status(0);
 				INIT_LIST_HEAD(&psHead->sList);
@@ -1417,7 +1440,7 @@ static void ged_kpi_work_cb(struct work_struct *psWork)
 				if (d_target_fps != 0)
 					ged_kpi_update_TargetTimeAndTargetFps(
 						psHead, d_target_fps,
-						GED_KPI_DEFAULT_FPS_MARGIN, 0,
+						GED_KPI_DEFAULT_FPS_MARGIN, 0, 0
 						mode, client);
 #ifdef GED_KPI_DEBUG
 				GED_LOGE(
@@ -1969,6 +1992,7 @@ static void ged_kpi_work_cb(struct work_struct *psWork)
 
 		target_FPS = psTimeStamp->i32FrameID;
 		ulID = psTimeStamp->ullWnd;
+		eara_tfps_diff = psTimeStamp->i32QedBuffer_length;
 
 		psHead = (struct GED_KPI_HEAD *)ged_hashtable_find(gs_hashtable
 			, (unsigned long)ulID);
@@ -1977,6 +2001,7 @@ static void ged_kpi_work_cb(struct work_struct *psWork)
 			ged_kpi_update_TargetTimeAndTargetFps(psHead,
 				target_FPS&0x000000ff,
 				(target_FPS&0x00000700) >> 8,
+				eara_tfps_diff,
 				(target_FPS&0xfffff100) >> 11,
 				GED_KPI_FRC_DEFAULT_MODE, -1);
 
@@ -2548,13 +2573,13 @@ void ged_kpi_set_target_FPS(u64 ulID, int target_FPS)
 EXPORT_SYMBOL(ged_kpi_set_target_FPS);
 /* ------------------------------------------------------------------- */
 void ged_kpi_set_target_FPS_margin(u64 ulID, int target_FPS,
-		int target_FPS_margin, int cpu_time)
+		int target_FPS_margin, int eara_tfps_diff, int cpu_time)
 {
 #ifdef MTK_GED_KPI
 		ged_kpi_push_timestamp(GED_SET_TARGET_FPS, 0, -1, ulID,
 			(target_FPS | (target_FPS_margin << 8)
 			| ((cpu_time/1000) << 11)),
-			-1, -1, NULL);
+			eara_tfps_diff, -1, NULL);
 #endif /* MTK_GED_KPI */
 }
 EXPORT_SYMBOL(ged_kpi_set_target_FPS_margin);
@@ -2648,7 +2673,7 @@ EXPORT_SYMBOL(ged_kpi_timer_based_pick_riskyBQ);
 /* For GiFT usage*/
 /* ------------------------------------------------------------------- */
 GED_ERROR ged_kpi_query_dvfs_freq_pred(int *gpu_freq_cur
-	, int *gpu_freq_max, int *gpu_freq_pred)
+	, int *gpu_freq_max, int *gpu_freq_pred, int *target_fps)
 {
 #ifdef MTK_GED_KPI
 	if (gpu_freq_cur == NULL
@@ -2659,6 +2684,7 @@ GED_ERROR ged_kpi_query_dvfs_freq_pred(int *gpu_freq_cur
 	*gpu_freq_cur = g_psMEOW->gpu_freq_cur;
 	*gpu_freq_max = g_psMEOW->gpu_freq_max;
 	*gpu_freq_pred = g_psMEOW->gpu_freq_pred;
+	*target_fps = g_psMEOW->target_fps;
 
 	return GED_OK;
 #else

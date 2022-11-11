@@ -88,8 +88,7 @@ int apu_power_dump_curr_status(struct seq_file *s, int oneline_str)
 	}
 
 	seq_printf(s,
-		   "[%5lu.%06lu]|curr| vpu0| vpu1| vpu2|mdla0|mdla1| conn|iommu|vcore|\n| opp|",
-		   (ulong)time, rem_nsec / 1000);
+		"|curr| vpu0| vpu1| vpu2|mdla0|mdla1| conn|iommu|vcore|\n| opp|");
 
 	seq_printf(s, "  %d  |", apusys_freq_to_opp(V_VPU0,
 					info.dsp1_freq * info.dump_div));

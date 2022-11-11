@@ -2,6 +2,7 @@
 /*
  * NFC Controller Driver
  * Copyright (C) 2020 ST Microelectronics S.A.
+ * Copyright (C) 2021 XiaoMi, Inc.
  * Copyright (C) 2010 Stollmann E+V GmbH
  * Copyright (C) 2010 Trusted Logic S.A.
  */
@@ -199,8 +200,7 @@ static int st21nfc_clock_select(struct st21nfc_device *st21nfc_dev)
 /*
  * Routine to disable clocks
  */
-static int st21nfc_clock_deselect(struct st21nfc_device *st21nfc_dev)
-{
+static int st21nfc_clock_deselect(struct st21nfc_device *st21nfc_dev) {
 #ifndef NO_MTK_CLK_MANAGEMENT
 	clk_buf_ctrl(CLK_BUF_NFC, false);
 #endif
@@ -960,11 +960,15 @@ static ssize_t power_stats_show(struct device *dev,
 		"\nError transition header --> payload state machine: 0x%llx\n"
 		"Error transition from an Active state when not in Idle state: 0x%llx\n"
 		"Error transition from Idle state to Idle state: 0x%llx\n"
-		"Warning transition from Active Reader/Writer state to Idle state: 0x%llx\n"
-		"Error transition from Active state to Active state: 0x%llx\n"
-		"Error transition from Idle state to Active state with notification: 0x%llx\n"
-		"Error transition from Active Reader/Writer state to Active Reader/Writer state: 0x%llx\n"
-		"Error transition from Idle state to Active Reader/Writer state with notification: 0x%llx\n"
+      "Warning transition from Active Reader/Writer state to Idle state: "
+      "0x%llx\n"
+      "Error transition from Active state to Active state: 0x%llx\n"
+      "Error transition from Idle state to Active state with notification: "
+      "0x%llx\n"
+      "Error transition from Active Reader/Writer state to Active "
+      "Reader/Writer state: 0x%llx\n"
+      "Error transition from Idle state to Active Reader/Writer state with "
+      "notification: 0x%llx\n"
 		"\nTotal uptime: 0x%llx Cumulative modes time: 0x%llx\n",
 		data->c_pw_states[ST21NFC_IDLE].count, idle_duration,
 		data->c_pw_states[ST21NFC_IDLE].last_entry,

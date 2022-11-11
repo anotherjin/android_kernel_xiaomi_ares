@@ -1021,9 +1021,6 @@ int apu_cmd_qos_end(uint64_t cmd_id, uint64_t sub_cmd_id,
 		mutex_unlock(&apu_qos_boost_mtx);
 #endif
 
-	}
-#endif
-
 	LOG_DEBUG("-\n");
 
 #if MNOC_TIME_PROFILE

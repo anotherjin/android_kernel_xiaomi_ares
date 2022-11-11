@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -89,6 +90,9 @@ struct mtk_mbox_pin_recv scp_mbox_pin_recv[] = {
 	{0, 0, 0, 0, 0, 0} },
 	{1, 0, 1, 0, 1, 0, PIN_IN_SIZE_SCP_CONNSYS, 0,
 	 IPI_IN_SCP_CONNSYS, { 0 }, 0, 0, 0, { { { { 0 } } } },
+	{0, 0, 0, 0, 0, 0} },
+	{1, 0, 0, 0, 1, 0, PIN_IN_SIZE_ALS_CALI_0, 0,
+	 IPI_IN_ALS_CALI, { 0 }, 0, 0, 0, { { { { 0 } } } },
 	{0, 0, 0, 0, 0, 0} },
 	{2, 0, 0, 0, 1, 0, PIN_IN_SIZE_SCP_MPOOL, 0,
 	 IPI_IN_SCP_MPOOL_0, { 0 }, 0, 0, 0, { { { { 0 } } } },

@@ -2,6 +2,7 @@
 /*
  * NFC Controller Driver
  * Copyright (C) 2020 ST Microelectronics S.A.
+ * Copyright (C) 2021 XiaoMi, Inc.
  * Copyright (C) 2010 Stollmann E+V GmbH
  * Copyright (C) 2010 Trusted Logic S.A.
  */
@@ -25,7 +26,7 @@
 #define ST21NFC_LEGACY_GET_WAKEUP _IOR(ST21NFC_MAGIC, 0x01, unsigned int)
 #define ST21NFC_LEGACY_PULSE_RESET _IOR(ST21NFC_MAGIC, 0x02, unsigned int)
 #define ST21NFC_LEGACY_SET_POLARITY_RISING \
-	_IOR(ST21NFC_MAGIC, 0x03, unsigned int)
+  _IOR(ST21NFC_MAGIC, 0x03, unsigned int)
 #define ST21NFC_LEGACY_SET_POLARITY_HIGH _IOR(ST21NFC_MAGIC, 0x05, unsigned int)
 #define ST21NFC_LEGACY_GET_POLARITY _IOR(ST21NFC_MAGIC, 0x07, unsigned int)
 #define ST21NFC_LEGACY_RECOVERY _IOR(ST21NFC_MAGIC, 0x08, unsigned int)
@@ -37,5 +38,4 @@
 void st21nfc_register_st54spi_cb(void (*cb)(int, void *), void *data);
 void st21nfc_unregister_st54spi_cb(void);
 
-#define ACCESS_OK(x, y, z) access_ok(x, y, z)
-
+#define ACCESS_OK(x,y,z) access_ok(x,y,z)

@@ -101,4 +101,3 @@ int __init eara_thrm_pre_init(void)
 
 	return 0;
 }
-

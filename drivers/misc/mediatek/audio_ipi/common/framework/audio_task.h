@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2016 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -44,6 +45,7 @@ enum {
 	TASK_SCENE_BLEENC               = 23,
 	TASK_SCENE_BLECALLDL            = 24,
 	TASK_SCENE_BLECALLUL            = 25,
+	TASK_SCENE_PHONE_CALL2          = 26,
 
 	/* control for driver */
 	TASK_SCENE_AUDIO_CONTROLLER_HIFI3_A,
@@ -58,4 +60,3 @@ enum {
 
 
 #endif /* end of AUDIO_TASK_H */
-

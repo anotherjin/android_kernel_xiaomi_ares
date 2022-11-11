@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2017 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -3388,7 +3389,7 @@ static void fbt_frame_start(struct render_info *thr, unsigned long long ts)
 	if (!targetfps)
 		targetfps = TARGET_UNLIMITED_FPS;
 
-	fpsgo_systrace_c_fbt(thr->pid, thr->buffer_id, targetfps, "target_fps");
+	fpsgo_systrace_c_fbt(thr->pid, thr->buffer_id, targetfps, "target_fps_cpu_final");
 	fpsgo_systrace_c_fbt(thr->pid, thr->buffer_id,
 		targettime, "target_time");
 

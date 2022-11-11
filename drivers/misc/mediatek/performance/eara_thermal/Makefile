@@ -14,8 +14,14 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 MTK_TOP = $(srctree)/drivers/misc/mediatek/
-EARA_THRM_TOP = $(srctree)/drivers/misc/mediatek/performance/eara_thermal/
+EARA_THRM_TOP = $(srctree)/drivers/misc/mediatek/performance/eara_thermal//
 FPSGO_TOP = $(srctree)/drivers/misc/mediatek/performance/fpsgo_v3/
+
+ifeq ($(CONFIG_MACH_MT6893),y)
+	PDIR = mt6893
+else
+	PDIR = $(MTK_PLATFORM)
+endif
 
 ifeq ($(CONFIG_MACH_MT6877),y)
 obj-y += platform/mt6877/thermal_budget_platform.o
@@ -24,8 +30,8 @@ obj-y += platform/mt6781/thermal_budget_platform.o
 else
 obj-y += platform/$(MTK_PLATFORM)/thermal_budget_platform.o
 endif
-obj-y += src/thermal_budget.o
-obj-y += src/thermal_base.o
+obj-y += src/src/thermal_budget.o
+obj-y += src/src/thermal_base.o
 obj-y += src/thermal_prethrottle.o
 
 ccflags-y += -I$(MTK_TOP)/thermal/common/inc/

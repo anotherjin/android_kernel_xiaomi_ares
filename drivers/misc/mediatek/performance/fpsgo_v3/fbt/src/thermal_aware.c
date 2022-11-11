@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2020 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -553,4 +554,3 @@ void __exit thrm_aware_exit(void)
 	fpsgo_sysfs_remove_file(thrm_aware_kobj, &kobj_attr_thrm_activate_fps);
 	fpsgo_sysfs_remove_file(thrm_aware_kobj, &kobj_attr_thrm_iso_pcbtemp_th);
 }
-

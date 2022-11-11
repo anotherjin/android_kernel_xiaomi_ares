@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -598,6 +599,16 @@
 #define SENSOR_DRVNAME_OV48C_MIPI_RAW           "ov48c_mipi_raw"
 #define SENSOR_DRVNAME_IMX355_MIPI_RAW          "imx355_mipi_raw"
 #define SENSOR_DRVNAME_OV02B10_MIPI_RAW         "ov02b10_mipi_raw"
+
+//K10
+#define OV64B40SUNNY_SENSOR_ID                   0x6442
+#define OV16A1QOFILM_SENSOR_ID                   0x1641
+#define GC02M1SUNNY_SENSOR_ID                    0x2e0
+#define IMX355SUNNY_SENSOR_ID                    0x355
+#define SENSOR_DRVNAME_OV64B40SUNNY_MIPI_RAW     "ov64b40sunny_mipi_raw"
+#define SENSOR_DRVNAME_OV16A1QOFILM_MIPI_RAW     "ov16a1qofilm_mipi_raw"
+#define SENSOR_DRVNAME_GC02M1SUNNY_MIPI_RAW      "gc02m1sunny_mipi_raw"
+#define SENSOR_DRVNAME_IMX355SUNNY_MIPI_RAW      "imx355sunny_mipi_raw"
 
 /******************************************************************************
  *

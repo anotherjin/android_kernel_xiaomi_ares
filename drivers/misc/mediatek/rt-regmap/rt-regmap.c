@@ -1103,7 +1103,10 @@ static int general_read(struct seq_file *seq_file, void *_data)
 
 static int general_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, general_read, inode->i_private);
+	if (file->f_mode & FMODE_READ)
+		return single_open(file, general_read, inode->i_private);
+	file->private_data = inode->i_private;
+	return 0;
 }
 
 static ssize_t general_write(struct file *file, const char __user *ubuf,
@@ -1244,13 +1247,20 @@ static ssize_t general_write(struct file *file, const char __user *ubuf,
 	return count;
 }
 
+static int general_release(struct inode *inode, struct file *file)
+{
+	if (file->f_mode & FMODE_READ)
+		return single_release(inode, file);
+	return 0;
+}
+
 static const struct file_operations general_ops = {
 	.owner = THIS_MODULE,
 	.open = general_open,
 	.write = general_write,
 	.read = seq_read,
 	.llseek = seq_lseek,
-	.release = single_release,
+	.release = general_release,
 };
 
 #define RT_CREATE_GENERAL_FILE(_id, _name, _mode)			\

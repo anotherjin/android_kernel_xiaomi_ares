@@ -28,4 +28,3 @@ extern int core_ctl_set_btask_up_thresh(int cid, unsigned int val);
 extern int core_ctl_set_cpu_tj_degree(int cid, unsigned int degree);
 extern int core_ctl_set_cpu_tj_btask_thresh(int cid, unsigned int val);
 #endif
-

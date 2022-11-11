@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2015 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -32,11 +33,14 @@ static atomic_t m4u_init = ATOMIC_INIT(0);
 s32 cmdq_sec_init_context(struct cmdq_sec_tee_context *tee)
 {
 	s32 status;
+        u32 loop = 0;
 
 	cmdq_msg("[SEC]%s", __func__);
 #if defined(CONFIG_MICROTRUST_TEE_SUPPORT)
 	while (!is_teei_ready()) {
-		cmdq_msg("[SEC]Microtrust TEE is not ready, wait...");
+		//cmdq_msg("[SEC]Microtrust TEE is not ready, wait...");
+		loop++;
+		if (loop > 60) break;
 		msleep(1000);
 	}
 #else
