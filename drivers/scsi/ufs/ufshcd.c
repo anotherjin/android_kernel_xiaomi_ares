@@ -3,6 +3,7 @@
  *
  * This code is based on drivers/scsi/ufs/ufshcd.c
  * Copyright (C) 2011-2013 Samsung India Software Operations
+ * Copyright (C) 2021 XiaoMi, Inc.
  * Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
  *
  * Authors:
@@ -185,7 +186,7 @@ struct ufs_pm_lvl_states ufs_pm_lvl_states[] = {
 	{UFS_POWERDOWN_PWR_MODE, UIC_LINK_OFF_STATE},
 };
 
-#define DID_FATAL 0xFF
+#define DID_FATAL 0xFFFF
 
 /* MTK PATCH: For reference of ufs_pm_lvl_states array size from outside */
 const int ufs_pm_lvl_states_size = ARRAY_SIZE(ufs_pm_lvl_states);
@@ -6189,8 +6190,6 @@ static void ufshcd_err_handler(struct work_struct *work)
 
 	hba = container_of(work, struct ufs_hba, eh_work);
 
-	down(&hba->eh_sem);
-
 	/* Error is happened in suspend/resume, bypass rpm get else deadlock */
 	if (!hba->pm_op_in_progress) {
 		pm_runtime_get_sync(hba->dev);
@@ -6364,7 +6363,6 @@ static void ufshcd_inv_resp_handler(struct work_struct *work)
 	ufshcd_wait_for_doorbell_clr(hba, DOORBELL_CLR_TOUT_US, true,
 				     2, 0);
 	ufshcd_wait_for_doorbell_clr(hba, 10000, true, 1, 0);
-	usleep_range(5000, 5100);
 	ret = ufshcd_dme_set(hba,
 		UIC_ARG_MIB_SEL(VENDOR_UNIPROPOWERDOWNCONTROL, 0), 1);
 	if (ret)
