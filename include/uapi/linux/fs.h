@@ -339,6 +339,7 @@ typedef int __bitwise __kernel_rwf_t;
 #define RWF_APPEND	((__force __kernel_rwf_t)0x00000010)
 
 /* mask of flags supported by the kernel */
+
 #define RWF_SUPPORTED	(RWF_HIPRI | RWF_DSYNC | RWF_SYNC | RWF_NOWAIT |\
 			 RWF_APPEND)
 

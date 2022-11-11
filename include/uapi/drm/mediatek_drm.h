@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -151,10 +152,17 @@ struct msync_parameter_table {
 #define COLOR_TUNING_INDEX 19
 #define THSHP_TUNING_INDEX 24
 #define THSHP_PARAM_MAX 146 /* TDSHP_3_0 */
+
 #define PARTIAL_Y_INDEX 22
 #define GLOBAL_SAT_SIZE 22
 #define CONTRAST_SIZE 22
 #define BRIGHTNESS_SIZE 22
+#if 0
+#define PARTIAL_Y_INDEX 10
+#define GLOBAL_SAT_SIZE 101
+#define CONTRAST_SIZE 201
+#define BRIGHTNESS_SIZE 511
+#endif
 #define PARTIAL_Y_SIZE 16
 #define PQ_HUE_ADJ_PHASE_CNT 4
 #define PQ_SAT_ADJ_PHASE_CNT 4
