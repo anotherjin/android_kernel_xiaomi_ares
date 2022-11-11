@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2016 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -52,7 +53,7 @@
 #define SHUTDOWN_TIME 40
 #define AVGVBAT_ARRAY_SIZE 30
 #define INIT_VOLTAGE 3450
-#define BATTERY_SHUTDOWN_TEMPERATURE 60
+#define BATTERY_SHUTDOWN_TEMPERATURE 70
 
 /* ============================================================ */
 /* typedef and Struct*/
@@ -659,6 +660,7 @@ struct fgd_cmd_param_t_custom {
 struct battery_data {
 	struct power_supply_desc psd;
 	struct power_supply *psy;
+	struct power_supply *ti_bms_psy;
 	int BAT_STATUS;
 	int BAT_HEALTH;
 	int BAT_PRESENT;
@@ -667,6 +669,11 @@ struct battery_data {
 	/* Add for Battery Service */
 	int BAT_batt_vol;
 	int BAT_batt_temp;
+	bool CHG_FULL_STATUS;
+	/* Add for External Gauge */
+	bool USE_TI_GAUGE;
+	bool FORCE_RECHARGE;
+	bool night_chg_flag;
 };
 
 struct BAT_EC_Struct {
@@ -892,9 +899,7 @@ struct mtk_battery {
 
 	bool is_reset_aging_factor;
 	int aging_factor;
-
-	int bat_health;
-	int show_ag;
+	int health;
 	int soc_decimal_rate;
 
 	struct timespec uisoc_oldtime;
@@ -1054,9 +1059,6 @@ extern void fg_update_sw_low_battery_check(unsigned int thd);
 extern void fg_sw_bat_cycle_accu(void);
 extern void fg_ocv_query_soc(int ocv);
 extern void fg_int_event(struct gauge_device *gauge_dev, enum gauge_event evt);
-extern int mtk_get_bat_health(void);
-extern int mtk_get_bat_show_ag(void);
-
 
 /* GM3 simulator */
 extern void gm3_log_init(void);
@@ -1079,4 +1081,7 @@ void zcv_filter_dump(struct zcv_filter *zf);
 bool zcv_check(struct zcv_filter *zf);
 void zcv_filter_init(struct zcv_filter *zf);
 
+/* ffc */
+extern int chg_get_fastcharge_mode(void);
+extern int chg_set_fastcharge_mode(bool enable);
 #endif /* __MTK_BATTERY_INTF_H__ */

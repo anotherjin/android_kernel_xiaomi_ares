@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2016 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -52,6 +53,7 @@
 #include <linux/proc_fs.h>
 #include <linux/of_fdt.h>	/*of_dt API*/
 #include <linux/of.h>
+#include <linux/of_platform.h> /*of_find_node_by_name*/
 #include <linux/vmalloc.h>
 #include <linux/math64.h>
 #include <linux/alarmtimer.h>
@@ -94,9 +96,23 @@ struct mtk_battery gm;
 bool gauge_get_current(int *bat_current)
 {
 	bool is_charging = false;
+	union power_supply_propval ibat_val = {0};
+	int ret = 0;
 
 	if (is_fg_disabled()) {
-		*bat_current = 0;
+		if (battery_main.USE_TI_GAUGE && battery_main.ti_bms_psy) {
+			ret = power_supply_get_property(battery_main.ti_bms_psy,
+					POWER_SUPPLY_PROP_CURRENT_NOW, &ibat_val);
+			if (!ret) {
+				*bat_current = ibat_val.intval;
+				is_charging = (ibat_val.intval < 0)?true:false;
+			} else {
+				bm_err("%s get ti_bms ibat failed, ret:%d \n", __func__, ret);
+				*bat_current = 0;
+			}
+		} else {
+			*bat_current = 0;
+		}
 		return is_charging;
 	}
 
@@ -341,25 +357,6 @@ int gauge_get_nag_dltv(void)
 
 	gauge_dev_get_nag_dltv(gm.gdev, &nafg_dltv);
 	return nafg_dltv;
-}
-
-/* ============================================================ */
-/* battery health methods */
-/* ============================================================ */
-int mtk_get_bat_health(void)
-{
-	if (gm.bat_health != 0)
-		return gm.bat_health;
-
-	return 10000;
-}
-
-int mtk_get_bat_show_ag(void)
-{
-	if (gm.show_ag != 0)
-		return gm.show_ag;
-
-	return 10000;
 }
 
 /* ============================================================ */
@@ -4601,7 +4598,6 @@ void bmd_ctrl_cmd_from_user(void *nl_data, struct fgd_nl_msg_t *ret_msg)
 			rtc_invalid);
 	}
 	break;
-
 	case FG_DAEMON_CMD_SET_BATTERY_CAPACITY:
 	{
 		struct fgd_cmd_param_t_8 param;
@@ -4609,12 +4605,7 @@ void bmd_ctrl_cmd_from_user(void *nl_data, struct fgd_nl_msg_t *ret_msg)
 		memcpy(&param, &msg->fgd_data[0],
 			sizeof(struct fgd_cmd_param_t_8));
 
-		if (param.data[10] != 0 && param.data[11] != 0) {
-			gm.show_ag = param.data[10];
-			gm.bat_health = param.data[11];
-			bm_err("%s:SET_BATTERY_CAPACITY: show_ag:%d, bat_health:%d",
-				__func__, gm.show_ag, gm.bat_health);
-		}
+		gm.health = param.data[11];
 
 		bm_debug(
 			"[fr] FG_DAEMON_CMD_SET_BATTERY_CAPACITY = %d %d %d %d %d %d %d %d %d %d RM:%d\n",
