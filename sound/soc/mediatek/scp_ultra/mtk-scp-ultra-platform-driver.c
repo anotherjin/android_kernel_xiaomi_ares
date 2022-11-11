@@ -725,4 +725,3 @@ EXPORT_SYMBOL_GPL(mtk_scp_ultra_pcm_platform);
 MODULE_DESCRIPTION("Mediatek scp ultra platform driver");
 MODULE_AUTHOR("Youwei Dong <Youwei.Dong@mediatek.com>");
 MODULE_LICENSE("GPL v2");
-

@@ -181,4 +181,3 @@ int mtk_scp_ultra_allocate_mem(struct snd_pcm_substream *substream,
 	return 0;
 }
 EXPORT_SYMBOL_GPL(mtk_scp_ultra_allocate_mem);
-

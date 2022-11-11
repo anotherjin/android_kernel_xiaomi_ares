@@ -130,4 +130,3 @@ void set_afe_ul_irq_target(int scp_enable)
 		 irq_data->irq_ap_en_reg,
 		 irq_data->irq_scp_en_reg);
 }
-

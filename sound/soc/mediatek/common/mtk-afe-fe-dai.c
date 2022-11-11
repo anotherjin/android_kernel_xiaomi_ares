@@ -2,6 +2,7 @@
  * mtk-afe-fe-dais.c  --  Mediatek afe fe dai operator
  *
  * Copyright (c) 2016 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
  * Author: Garlic Tseng <garlic.tseng@mediatek.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -974,4 +975,3 @@ EXPORT_SYMBOL_GPL(mtk_memif_set_pbuf_size);
 MODULE_DESCRIPTION("Mediatek simple fe dai operator");
 MODULE_AUTHOR("Garlic Tseng <garlic.tseng@mediatek.com>");
 MODULE_LICENSE("GPL v2");
-

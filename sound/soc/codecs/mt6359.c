@@ -3,6 +3,7 @@
 // mt6359.c  --  mt6359 ALSA SoC audio codec driver
 //
 // Copyright (c) 2018 MediaTek Inc.
+// Copyright (C) 2021 XiaoMi, Inc.
 // Author: KaiChieh Chuang <kaichieh.chuang@mediatek.com>
 
 #include <linux/platform_device.h>
@@ -259,6 +260,7 @@ struct mt6359_priv {
 
 	int hp_gain_ctl;
 	int hp_hifi_mode;
+	int hp_pull_low_off;
 
 	struct mt6359_codec_ops ops;
 	struct dc_trim_data dc_trim;
@@ -2019,8 +2021,8 @@ static int mtk_hp_impedance_disable(struct mt6359_priv *priv)
 
 	/* Enable HPR/L STB enhance circuits for off state */
 	regmap_update_bits(priv->regmap, MT6359_AUDDEC_ANA_CON2,
-			   RG_HPROUTPUTSTBENH_VAUDP32_MASK_SFT,
-			   0x3 << RG_HPROUTPUTSTBENH_VAUDP32_SFT);
+			RG_HPROUTPUTSTBENH_VAUDP32_MASK_SFT,
+			0x3 << RG_HPROUTPUTSTBENH_VAUDP32_SFT);
 	regmap_update_bits(priv->regmap, MT6359_AUDDEC_ANA_CON2,
 			   RG_HPLOUTPUTSTBENH_VAUDP32_MASK_SFT,
 			   0x3 << RG_HPLOUTPUTSTBENH_VAUDP32_SFT);
@@ -7904,6 +7906,11 @@ static int mt6359_platform_driver_probe(struct platform_device *pdev)
 #endif
 	if (IS_ERR(priv->regmap))
 		return PTR_ERR(priv->regmap);
+	of_property_read_u32(pdev->dev.of_node,
+			"always_pull_low_off",
+			&priv->hp_pull_low_off);
+	dev_info(&pdev->dev, "%s(), hp_pull_low_off=%d\n",
+			__func__, priv->hp_pull_low_off);
 
 #ifdef CONFIG_DEBUG_FS
 	/* create debugfs file */

@@ -13,4 +13,3 @@
 extern const struct snd_soc_platform_driver mtk_scp_ultra_pcm_platform;
 
 #endif
-
