@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
  * Copyright (c) 2015 MediaTek Inc.
+ * Copyright (C) 2021 XiaoMi, Inc.
  */
 
 #include <linux/completion.h>
@@ -515,7 +516,7 @@ struct cmdq_pkt *cmdq_pkt_create(struct cmdq_client *client)
 	if (client && cmdq_util_is_feature_en(CMDQ_LOG_FEAT_PERF))
 		cmdq_pkt_perf_begin(pkt);
 #endif
-
+	pkt->task_alive = true;
 	return pkt;
 }
 EXPORT_SYMBOL(cmdq_pkt_create);
@@ -526,6 +527,7 @@ void cmdq_pkt_destroy(struct cmdq_pkt *pkt)
 
 	if (client)
 		mutex_lock(&client->chan_mutex);
+	pkt->task_alive = false;
 	cmdq_pkt_free_buf(pkt);
 	kfree(pkt->flush_item);
 #if IS_ENABLED(CONFIG_MTK_CMDQ_MBOX_EXT)
@@ -2385,6 +2387,16 @@ s32 cmdq_pkt_dump_buf(struct cmdq_pkt *pkt, dma_addr_t curr_pa)
 	struct cmdq_pkt_buffer *buf;
 	u32 size, cnt = 0;
 
+	if (!pkt) {
+		cmdq_err("%s pkt is empty",__func__);
+		return -EINVAL;
+	}
+	if (!pkt->task_alive) {
+		cmdq_err("%s task_alive:%d",__func__,pkt->task_alive);
+		return -EINVAL;
+	}
+
+	client = (struct cmdq_client *)pkt->cl;
 	list_for_each_entry(buf, &pkt->buf, list_entry) {
 		if (list_is_last(&buf->list_entry, &pkt->buf)) {
 			size = CMDQ_CMD_BUFFER_SIZE - pkt->avail_buf_size;
@@ -2418,6 +2430,11 @@ int cmdq_dump_pkt(struct cmdq_pkt *pkt, dma_addr_t pc, bool dump_ist)
 
 	if (!pkt)
 		return -EINVAL;
+	}
+	if (!pkt->task_alive) {
+		cmdq_err("%s task_alive:%d",__func__,pkt->task_alive);
+		return -EINVAL;
+	}
 
 	client = (struct cmdq_client *)pkt->cl;
 	cmdq_util_user_msg(client->chan,
@@ -2445,4 +2462,3 @@ void cmdq_pkt_set_err_cb(struct cmdq_pkt *pkt,
 	pkt->err_cb.data = (void *)data;
 }
 EXPORT_SYMBOL(cmdq_pkt_set_err_cb);
-
