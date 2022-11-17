@@ -49,27 +49,9 @@ struct sensor_state {
 	int64_t delay;
 	int64_t latency;
 	int64_t start_time;
-	atomic_t flush;
-	atomic64_t start_time;
-};
-
-struct sensor_info {
-	uint8_t sensor_type;
-	uint32_t gain;
-	char name[16];
-	char vendor[16];
-};
-
-struct custom_cmd {
-	union {
-		int32_t data[24];
-		float f_data[24];
-	};
-	uint32_t action;
 };
 
 enum custom_action {
-	CUST_CMD_CALI = 0,
 	/*Add custom cmd action here!*/
 	CUST_CMD_CONFIG = 1,
 };

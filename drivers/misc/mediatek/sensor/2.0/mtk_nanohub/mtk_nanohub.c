@@ -2353,7 +2353,7 @@ static int mtk_nanohub_config(struct hf_device *hfdev,
 		int sensor_type, void *data, uint8_t length)
 {
 	struct mtk_nanohub_device *device = mtk_nanohub_dev;
-
+	int32_t *dat = data;
 	if (sensor_type <= 0)
 		return 0;
 	pr_notice("%s [%d]\n", __func__, sensor_type);
@@ -2383,7 +2383,7 @@ static int mtk_nanohub_config(struct hf_device *hfdev,
 		if (sizeof(device->light_config_data) < length)
 			length = sizeof(device->light_config_data);
 #ifdef ALS_MULTI_CALI_SUPPORT
-		if (data[0] == 0 || data[0] == 99) {
+		if (dat[0] == 0 || dat[0] == 99) {
 #endif
 			spin_lock(&config_data_lock);
 			memcpy(device->light_config_data, data, length);
@@ -2428,7 +2428,7 @@ static int mtk_nanohub_config(struct hf_device *hfdev,
 		break;
 	case ID_LUX_B:
 #ifdef BACKLED_STATE_NOTIFY
-		if (data[0]== AMBIENT_BACKLED_STATE) {
+		if (dat[0]== AMBIENT_BACKLED_STATE) {
 			length = sizeof(device->backled_state_data);
 			spin_lock(&config_data_lock);
 			memcpy(device->backled_state_data, data, length);

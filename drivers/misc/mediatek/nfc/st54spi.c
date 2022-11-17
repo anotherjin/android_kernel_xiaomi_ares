@@ -1016,7 +1016,10 @@ static int st54spi_parse_dt(struct device *dev, struct st54spi_data *pdata)
 				__func__, pdata->power_or_nreset_gpio);
 	return r;
 }
-
+#define ST54SPI_CB_RESET_END 0
+#define ST54SPI_CB_RESET_START 1
+#define ST54SPI_CB_ESE_NOT_USED 2
+#define ST54SPI_CB_ESE_USED 3
 #ifndef MODULE
 static void st54spi_st21nfc_cb(int dir, void *data)
 {
@@ -1032,7 +1035,7 @@ static void st54spi_st21nfc_cb(int dir, void *data)
 			st54spi_power_off_for_comm(st54spi);
 			st54spi->se_is_poweron_for_comm = 1; // so we restore it
 		}
-		if (st54spi->se_is_poweron)
+		if (st54spi->se_is_poweron){
 			st54spi_power_off(st54spi);
 			st54spi->se_is_poweron = 1; // so we restore it
 		}

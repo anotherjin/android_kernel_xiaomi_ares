@@ -38,6 +38,7 @@ ccci_port-y += port_rpc.o
 ccci_port-y += port_smem.o
 ccci_port-y += port_sysmsg.o
 ccci_port-y += ccci_swtp.o
+ccci_port-y += port_misc.o
 else
 obj-  := dummy.o # avoid build error
 endif

@@ -612,7 +612,7 @@ static int mt_usb_get_property(struct power_supply *psy,
 		pr_err("typec_cc_orientation = %d\n", val->intval);
 		break;
 	case POWER_SUPPLY_PROP_TYPEC_POWER_ROLE:
-		val->intval = tcpm_inquire_typec_role(mtk_chg->cti->tcpc_dev);
+		val->intval = tcpm_inquire_typec_role(mtk_chg->cti->tcpc);
 		break;
 	case POWER_SUPPLY_PROP_TYPEC_MODE:
 		val->intval = mtk_chg->cti->typec_mode;
@@ -1344,14 +1344,14 @@ static int mt_charger_probe(struct platform_device *pdev)
 	cti->dev = &pdev->dev;
 
 #ifdef CONFIG_TCPC_CLASS
-	cti->tcpc_dev = tcpc_dev_get_by_name("type_c_port0");
-	if (cti->tcpc_dev == NULL) {
+	cti->tcpc = tcpc_dev_get_by_name("type_c_port0");
+	if (cti->tcpc == NULL) {
 		pr_info("%s: tcpc device not ready, defer\n", __func__);
 		ret = -EPROBE_DEFER;
 		goto err_get_tcpc_dev;
 	}
 	cti->pd_nb.notifier_call = pd_tcp_notifier_call;
-	ret = register_tcp_dev_notifier(cti->tcpc_dev,
+	ret = register_tcp_dev_notifier(cti->tcpc,
 		&cti->pd_nb, TCP_NOTIFY_TYPE_ALL);
 	if (ret < 0) {
 		pr_info("%s: register tcpc notifer fail\n", __func__);
@@ -1359,7 +1359,7 @@ static int mt_charger_probe(struct platform_device *pdev)
 		goto err_get_tcpc_dev;
 	}
 	cti->otg_nb.notifier_call = otg_tcp_notifier_call;
-	ret = register_tcp_dev_notifier(cti->tcpc_dev,
+	ret = register_tcp_dev_notifier(cti->tcpc,
 		&cti->otg_nb, TCP_NOTIFY_TYPE_ALL);
 	if (ret < 0) {
 		pr_info("%s: register otg tcpc notifer fail\n",

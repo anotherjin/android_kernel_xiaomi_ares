@@ -578,6 +578,17 @@ enum SYS_CB_ID {
 	ID_GET_TDD_THERMAL_DATA,
 };
 
+enum KERNEL_USER_ID {
+	ID_MD_CAMERA = 0,
+	ID_USER_MAX,
+};
+
+typedef int (*ccci_misc_cb_func_t)(int, void *, int);
+struct ccci_misc_cb_func_info {
+	enum KERNEL_USER_ID	id;
+	ccci_misc_cb_func_t	func;
+};
+
 typedef int (*ccci_sys_cb_func_t)(int, int);
 struct ccci_sys_cb_func_info {
 	enum SYS_CB_ID		id;

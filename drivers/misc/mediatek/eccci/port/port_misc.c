@@ -41,6 +41,7 @@
 #include "ccci_bm.h"
 #include "ccci_modem.h"
 #include "port_misc.h"
+#include <mt-plat/mtk_ccci_common.h>
 
 #define MAX_QUEUE_LENGTH 16
 
@@ -53,8 +54,6 @@ int register_ccci_func_call_back(int md_id, unsigned int id,
 	struct ccci_misc_cb_func_info *info_ptr;
 
 	if (md_id >= MAX_MD_NUM) {
-		CCCI_ERROR_LOG(md_id, MISC,
-			"register_sys_call_back fail: invalid md id\n");
 		return -EINVAL;
 	}
 
@@ -63,11 +62,7 @@ int register_ccci_func_call_back(int md_id, unsigned int id,
 	if (info_ptr->func == NULL) {
 		info_ptr->id = id;
 		info_ptr->func = func;
-	} else {
-		CCCI_ERROR_LOG(md_id, MISC,
-			"register_ccci_misc_call_back fail: func(0x%x) registered! %ps\n",
-			id, info_ptr->func);
-	}
+	} 
 
 	return ret;
 }
@@ -79,15 +74,11 @@ void exec_ccci_misc_call_back(int md_id, int cb_id, void *data, int data_len)
 	struct ccci_misc_cb_func_info *curr_table;
 
 	if (md_id >= MAX_MD_NUM) {
-		CCCI_ERROR_LOG(md_id, MISC,
-			"exec_ccci_misc_cb fail: invalid md id\n");
 		return;
 	}
 
 	id = cb_id & 0xFF;
 	if (id >= ID_USER_MAX) {
-		CCCI_ERROR_LOG(md_id, MISC,
-			"exec_sys_cb fail: invalid func id(0x%x)\n", cb_id);
 		return;
 	}
 
@@ -96,10 +87,6 @@ void exec_ccci_misc_call_back(int md_id, int cb_id, void *data, int data_len)
 	func = curr_table[id].func;
 	if (func != NULL)
 		func(md_id, data, data_len);
-	else
-		CCCI_ERROR_LOG(md_id, MISC,
-			"exec_ccci_misc_cb fail: func id(0x%x) not register!\n",
-			cb_id);
 }
 
 /*
@@ -122,9 +109,6 @@ static int port_misc_kernel_thread(void *arg)
 	int ret = 0;
 	/* struct rmmi_camera_arfcn_info_struct *recv_msg; */
 
-	CCCI_DEBUG_LOG(port->md_id, MISC,
-		"port %s's thread running\n", port->name);
-
 	while (1) {
 retry:
 		if (skb_queue_empty(&port->rx_skb_list)) {
@@ -135,8 +119,6 @@ retry:
 		}
 		if (kthread_should_stop())
 			break;
-		CCCI_DEBUG_LOG(port->md_id, MISC,
-			"read on %s\n", port->name);
 		/* 1. dequeue */
 		spin_lock_irqsave(&port->rx_skb_list.lock, flags);
 		skb = __skb_dequeue(&port->rx_skb_list);
@@ -156,14 +138,8 @@ retry:
 				ID_MD_CAMERA, skb->data, skb->len);
 			break;
 		default:
-			CCCI_ERROR_LOG(port->md_id, MISC,
-				"recv unknown channel %d\n",
-				ccci_h->channel);
 			break;
 		}
-		CCCI_DEBUG_LOG(port->md_id, MISC,
-			"read done on %s\n",
-			port->name);
 		ccci_free_skb(skb);
 	}
 	return 0;
@@ -174,16 +150,12 @@ static int port_misc_init(struct port_t *port)
 	struct cdev *dev;
 	int ret = 0;
 
-	CCCI_DEBUG_LOG(port->md_id, MISC,
-		"ccci misc port %s is initializing\n", port->name);
 	port->rx_length_th = MAX_QUEUE_LENGTH;
 	port->skb_from_pool = 1;
 	port->interception = 0;
 	if (port->flags & PORT_F_WITH_CHAR_NODE) {
 		dev = kmalloc(sizeof(struct cdev), GFP_KERNEL);
 		if (unlikely(!dev)) {
-			CCCI_ERROR_LOG(port->md_id, MISC,
-				"alloc misc char dev fail!!\n");
 			return -1;
 		}
 		cdev_init(dev, &ccci_misc_dev_fops);

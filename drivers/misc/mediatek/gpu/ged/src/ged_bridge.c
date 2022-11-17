@@ -226,8 +226,7 @@ int ged_bridge_query_dvfs_freq_pred(
 		QueryDVFSFreqPredOut->eError = ged_kpi_query_dvfs_freq_pred(
 			&QueryDVFSFreqPredOut->gpu_freq_cur,
 			&QueryDVFSFreqPredOut->gpu_freq_max,
-			&QueryDVFSFreqPredOut->gpu_freq_dvfs_pred,
-			&QueryDVFSFreqPredOut->target_fps);
+			&QueryDVFSFreqPredOut->gpu_freq_dvfs_pred);
 	}
 	return 0;
 }

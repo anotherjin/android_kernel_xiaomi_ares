@@ -14,6 +14,7 @@
 #include "ccci_config.h"
 #include "ccci_hif.h"
 #include "port_cfg.h"
+#include "port_t.h"
 #include "ccci_port.h"
 #include <mt-plat/mtk_ccci_common.h>
 

@@ -40,7 +40,7 @@ unsigned int cnt_start, cnt_suspend, cnt_end, cnt_work_func;
 #include <mtk_qos_bound.h>
 #include <mtk_qos_sram.h>
 #include "apusys_power.h"
-
+#endif
 
 #define DEFAUTL_QOS_POLLING_TIME (16)
 /* define in mtk_qos_bound.h */
@@ -1020,7 +1020,7 @@ int apu_cmd_qos_end(uint64_t cmd_id, uint64_t sub_cmd_id,
 		}
 		mutex_unlock(&apu_qos_boost_mtx);
 #endif
-
+	}
 	LOG_DEBUG("-\n");
 
 #if MNOC_TIME_PROFILE

@@ -1024,8 +1024,6 @@ static int teei_client_init(void)
 
 	struct sched_param param = {.sched_priority = 50 };
 
-	struct sched_param param = {.sched_priority = 50 };
-
 	/* IMSG_DEBUG("TEEI Agent Driver Module Init ...\n"); */
 
 	IMSG_DEBUG("=====================================================\n\n");

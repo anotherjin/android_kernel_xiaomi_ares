@@ -73,7 +73,7 @@ struct timeval start, end;
 /* To enable debug log: */
 /* # echo aal_dbg:1 > /sys/kernel/debug/dispsys */
 int aal_dbg_en;
-static int g_max_backlight = 1023;
+static int g_max_backlight = 2047;
 
 static DECLARE_WAIT_QUEUE_HEAD(g_aal_hist_wq);
 static DEFINE_SPINLOCK(g_aal_clock_lock);
@@ -89,20 +89,30 @@ static struct DISP_AAL_HIST g_aal_hist = {
 };
 
 static struct DISP_AAL_HIST g_aal_hist_db;
+static struct DISP_AAL_HIST g_aal1_hist_db;
 //static ddp_module_notify g_ddp_notify;
 static atomic_t g_aal0_hist_available = ATOMIC_INIT(0);
 static atomic_t g_aal1_hist_available = ATOMIC_INIT(0);
 static atomic_t g_aal_is_init_regs_valid = ATOMIC_INIT(0);
+static atomic_t g_aal1_is_init_regs_valid = ATOMIC_INIT(0);
 
 static atomic_t g_aal_backlight_notified = ATOMIC_INIT(1023);
+static atomic_t g_aal1_backlight_notified = ATOMIC_INIT(1023);
 static atomic_t g_aal_initialed = ATOMIC_INIT(0);
+static atomic_t g_aal1_initialed = ATOMIC_INIT(0);
 static atomic_t g_aal_allowPartial = ATOMIC_INIT(0);
+static atomic_t g_aal1_allowPartial = ATOMIC_INIT(0);
 static atomic_t g_aal_force_enable_irq = ATOMIC_INIT(0);
+static atomic_t g_aal1_force_enable_irq = ATOMIC_INIT(0);
 static atomic_t g_led_mode = ATOMIC_INIT(MT65XX_LED_MODE_NONE);
 static atomic_t g_aal_force_relay = ATOMIC_INIT(0);
+static atomic_t g_aal1_force_relay = ATOMIC_INIT(0);
 static atomic_t g_aal_eof_irq = ATOMIC_INIT(0);
+static atomic_t g_aal1_eof_irq = ATOMIC_INIT(0);
 static atomic_t g_aal_first_frame = ATOMIC_INIT(0);
+static atomic_t g_aal1_first_frame = ATOMIC_INIT(0);
 static struct workqueue_struct *aal_flip_wq;
+static struct workqueue_struct *aal_refresh_wq;
 
 enum AAL_UPDATE_HIST {
 	UPDATE_NONE = 0,
@@ -188,8 +198,10 @@ struct mtk_disp_aal {
 	atomic_t is_clock_on;
 	const struct mtk_disp_aal_data *data;
 	struct work_struct aal_flip_task;
+	struct work_struct aal_refresh_task;
 };
 static struct mtk_disp_aal *g_aal_data;
+static struct mtk_disp_aal *g_aal1_data;
 
 static inline struct mtk_disp_aal *comp_to_aal(struct mtk_ddp_comp *comp)
 {
@@ -460,12 +472,6 @@ void disp_aal_notify_backlight_changed(int trans_backlight)
 	disp_aal_notify_backlight_log(trans_backlight);
 	//disp_aal_exit_idle(__func__, 1);
 
-	// FIXME
-	//max_backlight = disp_pwm_get_max_backlight(DISP_PWM0);
-	max_backlight = 1024;
-	if (bl_1024 > max_backlight)
-		bl_1024 = max_backlight;
-
 	atomic_set(&g_aal_backlight_notified, trans_backlight);
 
 	service_flags = 0;
@@ -594,6 +600,14 @@ static void mtk_crtc_user_cmd_work(struct work_struct *work_item)
 
 	AALFLOW_LOG("end");
 }
+
+static void mtk_disp_aal_refresh_trigger(struct work_struct *work_item)
+{
+	AALFLOW_LOG("start");
+
+	mtk_crtc_check_trigger(default_comp->mtk_crtc, true, true);
+}
+
 
 void disp_aal_flip_sram(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 	const char *caller)

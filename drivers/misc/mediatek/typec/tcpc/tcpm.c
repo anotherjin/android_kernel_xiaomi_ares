@@ -340,7 +340,7 @@ uint8_t tcpm_inquire_pd_state_curr(
 }
 
 uint8_t tcpm_inquire_pd_vconn_role(
-	struct tcpc_device *tcpc_dev)
+	struct tcpc_device *tcpc)
 {
 	struct pd_port *pd_port = &tcpc->pd_port;
 

@@ -488,6 +488,9 @@ enum CCCI_CH {
 	CCCI_UDC_RX			= 177,
 	CCCI_UDC_TX			= 178,
 
+	CCCI_MIPI_CHANNEL_RX	= 179,
+	CCCI_MIPI_CHANNEL_TX	= 180,
+	
 	CCCI_TCHE_RX			= 181,
 	CCCI_TCHE_TX			= 182,
 	CCCI_DISP_RX			= 183,
@@ -518,7 +521,16 @@ enum CCCI_CH {
 	CCCI_C2K_AT7,	/*rild AT7 ch for c2k*/
 	CCCI_C2K_AT8,	/*rild AT8 ch for c2k*/
 	CCCI_C2K_LB_DL,	/*downlink loopback*/
-
+	
+	CCCI_EPDG1_RX			= 236,
+	CCCI_EPDG1_TX			= 237,
+	CCCI_EPDG2_RX			= 238,
+	CCCI_EPDG2_TX			= 239,
+	CCCI_EPDG3_RX			= 240,
+	CCCI_EPDG3_TX			= 241,
+	CCCI_EPDG4_RX			= 242,
+	CCCI_EPDG4_TX			= 243,
+	
 	/* virtual channels */
 	CCCI_DUMMY_CH,
 	CCCI_SMEM_CH,

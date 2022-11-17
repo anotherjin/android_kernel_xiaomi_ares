@@ -2573,13 +2573,13 @@ void ged_kpi_set_target_FPS(u64 ulID, int target_FPS)
 EXPORT_SYMBOL(ged_kpi_set_target_FPS);
 /* ------------------------------------------------------------------- */
 void ged_kpi_set_target_FPS_margin(u64 ulID, int target_FPS,
-		int target_FPS_margin, int eara_tfps_diff, int cpu_time)
+		int target_FPS_margin, int cpu_time)
 {
 #ifdef MTK_GED_KPI
 		ged_kpi_push_timestamp(GED_SET_TARGET_FPS, 0, -1, ulID,
 			(target_FPS | (target_FPS_margin << 8)
 			| ((cpu_time/1000) << 11)),
-			eara_tfps_diff, -1, NULL);
+			-1, -1, NULL);
 #endif /* MTK_GED_KPI */
 }
 EXPORT_SYMBOL(ged_kpi_set_target_FPS_margin);
@@ -2673,7 +2673,7 @@ EXPORT_SYMBOL(ged_kpi_timer_based_pick_riskyBQ);
 /* For GiFT usage*/
 /* ------------------------------------------------------------------- */
 GED_ERROR ged_kpi_query_dvfs_freq_pred(int *gpu_freq_cur
-	, int *gpu_freq_max, int *gpu_freq_pred, int *target_fps)
+	, int *gpu_freq_max, int *gpu_freq_pred)
 {
 #ifdef MTK_GED_KPI
 	if (gpu_freq_cur == NULL
@@ -2684,7 +2684,6 @@ GED_ERROR ged_kpi_query_dvfs_freq_pred(int *gpu_freq_cur
 	*gpu_freq_cur = g_psMEOW->gpu_freq_cur;
 	*gpu_freq_max = g_psMEOW->gpu_freq_max;
 	*gpu_freq_pred = g_psMEOW->gpu_freq_pred;
-	*target_fps = g_psMEOW->target_fps;
 
 	return GED_OK;
 #else
