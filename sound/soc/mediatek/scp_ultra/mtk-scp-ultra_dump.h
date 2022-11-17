@@ -28,3 +28,4 @@ int ultra_start_engine_thread(void);
 void ultra_stop_engine_thread(void);
 
 #endif /* end of AUDIO_IPI_CLIENT_ULTRA_H */
+

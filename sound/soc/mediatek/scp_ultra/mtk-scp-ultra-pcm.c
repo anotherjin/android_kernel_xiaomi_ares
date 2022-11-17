@@ -127,3 +127,4 @@ module_platform_driver(scp_ultra_pcm_driver);
 MODULE_DESCRIPTION("Mediatek ALSA SoC scp ultrasound platform driver");
 MODULE_AUTHOR("Youwei Dong <Youwei.Dong@mediatek.com>");
 MODULE_LICENSE("GPL v2");
+

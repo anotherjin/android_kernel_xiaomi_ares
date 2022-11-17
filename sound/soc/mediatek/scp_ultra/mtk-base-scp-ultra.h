@@ -68,3 +68,4 @@ struct ultra_gain_config {
 };
 
 #endif
+
