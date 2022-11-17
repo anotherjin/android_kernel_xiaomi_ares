@@ -110,7 +110,7 @@ LIBBPF_VERSION = $(BPF_VERSION).$(BPF_PATCHLEVEL).$(BPF_EXTRAVERSION)
 ifdef EXTRA_CFLAGS
   CFLAGS := $(EXTRA_CFLAGS)
 else
-  CFLAGS := -g -Wall
+  CFLAGS := -g 
 endif
 
 ifeq ($(feature-libelf-mmap), 1)
@@ -123,7 +123,7 @@ endif
 
 # Append required CFLAGS
 override CFLAGS += $(EXTRA_WARNINGS)
-override CFLAGS += -Werror -Wall
+override CFLAGS += -Wno-error 
 override CFLAGS += -fPIC
 override CFLAGS += $(INCLUDES)
 

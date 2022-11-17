@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
 # Makefile for Hyper-V tools
 
-WARNINGS = -Wall -Wextra
+WARNINGS =  -Wextra
 CFLAGS = $(WARNINGS) -g $(shell getconf LFS_CFLAGS)
 
 CFLAGS += -D__EXPORTED_HEADERS__ -I../../include/uapi -I../../include

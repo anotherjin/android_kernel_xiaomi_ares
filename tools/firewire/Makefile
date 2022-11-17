@@ -6,7 +6,7 @@ CC = gcc
 
 all : nosy-dump
 
-nosy-dump : CFLAGS = -Wall -O2 -g
+nosy-dump : CFLAGS =  -O2 -g
 nosy-dump : CPPFLAGS = -DVERSION=\"$(nosy-dump-version)\" -I../../drivers/firewire
 nosy-dump : LDFLAGS = -g
 nosy-dump : LDLIBS = -lpopt

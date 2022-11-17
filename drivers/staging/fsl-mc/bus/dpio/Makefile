@@ -2,7 +2,7 @@
 # QorIQ DPAA2 DPIO driver
 #
 
-subdir-ccflags-y := -Werror
+subdir-ccflags-y := -Wno-error
 
 obj-$(CONFIG_FSL_MC_DPIO) += fsl-mc-dpio.o
 

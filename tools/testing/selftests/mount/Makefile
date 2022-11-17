@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 # Makefile for mount selftests.
-CFLAGS = -Wall \
+CFLAGS =  \
          -O2
 
 TEST_GEN_PROGS := unprivileged-remount-test

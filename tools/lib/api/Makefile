@@ -18,7 +18,7 @@ MAKEFLAGS += --no-print-directory
 LIBFILE = $(OUTPUT)libapi.a
 
 CFLAGS := $(EXTRA_WARNINGS) $(EXTRA_CFLAGS)
-CFLAGS += -ggdb3 -Wall -Wextra -std=gnu99 -U_FORTIFY_SOURCE -fPIC
+CFLAGS += -ggdb3  -Wextra -std=gnu99 -U_FORTIFY_SOURCE -fPIC
 
 ifeq ($(DEBUG),0)
 ifeq ($(CC_NO_CLANG), 0)
@@ -34,7 +34,7 @@ endif
 
 # Treat warnings as errors unless directed not to
 ifneq ($(WERROR),0)
-  CFLAGS += -Werror
+  CFLAGS += -Wno-error
 endif
 
 CFLAGS += -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64

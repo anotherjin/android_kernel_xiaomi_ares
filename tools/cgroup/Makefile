@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
 # Makefile for cgroup tools
 
-CFLAGS = -Wall -Wextra
+CFLAGS =  -Wextra
 
 all: cgroup_event_listener
 %: %.c

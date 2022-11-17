@@ -19,6 +19,7 @@
 *.dwo
 *.elf
 *.gcno
+*.log
 *.gz
 *.i
 *.ko

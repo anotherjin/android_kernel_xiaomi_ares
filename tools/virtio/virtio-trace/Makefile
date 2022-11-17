@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 CC = gcc
-CFLAGS = -O2 -Wall -pthread
+CFLAGS = -O2  -pthread
 
 all: trace-agent
 

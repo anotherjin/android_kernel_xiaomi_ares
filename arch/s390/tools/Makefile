@@ -4,7 +4,7 @@
 #
 
 hostprogs-y		    += gen_facilities
-HOSTCFLAGS_gen_facilities.o += -Wall $(LINUXINCLUDE)
+HOSTCFLAGS_gen_facilities.o +=  $(LINUXINCLUDE)
 
 define filechk_facilities.h
 	$(obj)/gen_facilities

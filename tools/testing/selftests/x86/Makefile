@@ -31,7 +31,7 @@ BINARIES_64 := $(TARGETS_C_64BIT_ALL:%=%_64)
 BINARIES_32 := $(patsubst %,$(OUTPUT)/%,$(BINARIES_32))
 BINARIES_64 := $(patsubst %,$(OUTPUT)/%,$(BINARIES_64))
 
-CFLAGS := -O2 -g -std=gnu99 -pthread -Wall -no-pie
+CFLAGS := -O2 -g -std=gnu99 -pthread  -no-pie
 
 ifeq ($(CAN_BUILD_I386),1)
 all: all_32

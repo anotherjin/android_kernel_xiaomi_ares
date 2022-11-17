@@ -1,4 +1,4 @@
-CFLAGS = -Wall
+CFLAGS = 
 
 TEST_GEN_FILES := open-unlink create-read
 TEST_PROGS := efivarfs.sh

@@ -118,7 +118,7 @@ cc-supports = ${shell if $(CC) ${1} -S -o /dev/null -x c /dev/null > /dev/null 2
 # use '-Os' optimization if available, else use -O2
 OPTIMIZATION := $(call cc-supports,-Os,-O2)
 
-WARNINGS := -Wall -Wchar-subscripts -Wpointer-arith -Wsign-compare
+WARNINGS :=  -Wchar-subscripts -Wpointer-arith -Wsign-compare
 WARNINGS += $(call cc-supports,-Wno-pointer-sign)
 WARNINGS += $(call cc-supports,-Wdeclaration-after-statement)
 WARNINGS += -Wshadow

@@ -123,7 +123,7 @@ INCLUDES = -I. -I $(srctree)/tools/include $(CONFIG_INCLUDES)
 ifdef EXTRA_CFLAGS
   CFLAGS := $(EXTRA_CFLAGS)
 else
-  CFLAGS := -g -Wall
+  CFLAGS := -g 
 endif
 
 # Append required CFLAGS

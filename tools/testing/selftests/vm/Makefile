@@ -5,7 +5,7 @@ ifndef OUTPUT
   OUTPUT := $(shell pwd)
 endif
 
-CFLAGS = -Wall -I ../../../../usr/include $(EXTRA_CFLAGS)
+CFLAGS =  -I ../../../../usr/include $(EXTRA_CFLAGS)
 LDLIBS = -lrt
 TEST_GEN_FILES = compaction_test
 TEST_GEN_FILES += hugepage-mmap

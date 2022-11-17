@@ -2,7 +2,7 @@
 # Makefile for USB tools
 
 PTHREAD_LIBS = -lpthread
-WARNINGS = -Wall -Wextra
+WARNINGS =  -Wextra
 CFLAGS = $(WARNINGS) -g -I../include
 LDFLAGS = $(PTHREAD_LIBS)
 

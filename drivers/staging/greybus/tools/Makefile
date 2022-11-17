@@ -5,7 +5,7 @@ else
   Q = @
 endif
 
-CFLAGS	+= -std=gnu99 -Wall -Wextra -g \
+CFLAGS	+= -std=gnu99  -Wextra -g \
 	    -D_GNU_SOURCE \
 	    -Wno-unused-parameter \
 	    -Wmaybe-uninitialized \
