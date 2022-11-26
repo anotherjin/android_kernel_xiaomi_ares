@@ -1,4 +1,3 @@
-/*Copyright (C) 2018 XiaoMi, Inc.*/
 #include <linux/interrupt.h>
 #include <linux/irq.h>
 #include <linux/kernel.h>
@@ -17,7 +16,7 @@
 #include <linux/jiffies.h>
 #include <linux/wait.h>
 #include <linux/poll.h>
-
+#include <linux/regulator/consumer.h>
 
 #undef pr_fmt
 #define pr_fmt(fmt) "gamekey: " fmt
@@ -28,8 +27,19 @@
 #define HALL_IN_LEVEL		(1 ^ HALL_OUT_LEVEL)
 #define DEFAULT_DEBOUNCE_TIME	5   /*unit in ms*/
 
-#define SW_HALL_LEFT  0x13
-#define SW_HALL_RIGHT 0x14
+/*
+#define SW_HALL_LEFT  0x03
+#define SW_HALL_RIGHT 0x04
+*/
+
+#define DELAYTIME_HALL_REPORT     100   /*unit in ms*/
+#define ABNORMAL_TIME_INTERVAL    95
+
+struct delayed_work open_close_check_left;
+struct delayed_work open_close_check_right;
+
+u64 timeout_left  = 0;
+u64 timeout_right = 0;
 
 enum gpio_list {
 	HALL_LEFT = 0,
@@ -69,7 +79,7 @@ static int detect_gpio_status_timeout(struct gamekey_core *core, int gpio_nr, in
 static ssize_t gamekey_read(struct file *filp, char __user *buf,
 				   size_t count, loff_t *ppos)
 {
-	int ret;
+	int ret = 0;
 	char *sts = g_core->sts;
 
 	if (count != GPIO_MAX)
@@ -130,7 +140,7 @@ static struct miscdevice gamekey_misc = {
 
 static int parse_dt(struct gamekey_core *core)
 {
-	int ret;
+	int ret = 0;
 	struct device_node *np = core->dev->of_node;
 
 	core->hw.gpio_info[HALL_LEFT].gpio = of_get_named_gpio_flags(np, "hall_left", 0, NULL);
@@ -158,8 +168,8 @@ static int parse_dt(struct gamekey_core *core)
 
 	pr_info("hall left gpio = %d",  core->hw.gpio_info[HALL_LEFT].gpio);
 	pr_info("hall right gpio = %d", core->hw.gpio_info[HALL_RIGHT].gpio);
-	pr_info("key right gpio = %d",  core->hw.gpio_info[GAMEKEY_LEFT].gpio);
-	pr_info("key left gpio = %d",   core->hw.gpio_info[GAMEKEY_RIGHT].gpio);
+	pr_info("key left gpio = %d",  core->hw.gpio_info[GAMEKEY_LEFT].gpio);
+	pr_info("key right gpio = %d",   core->hw.gpio_info[GAMEKEY_RIGHT].gpio);
 	pr_info("debounce time = %d", core->hw.debounce_time);
 
 	return 0;
@@ -167,7 +177,7 @@ static int parse_dt(struct gamekey_core *core)
 
 static int input_init(struct gamekey_core *core)
 {
-	int ret;
+	int ret = 0;
 
 	core->input_dev = input_allocate_device();
 	if (!core->input_dev) {
@@ -177,10 +187,14 @@ static int input_init(struct gamekey_core *core)
 
 	core->input_dev->name = "xm_gamekey";
 	core->input_dev->id.product = 0x0628;
-	input_set_capability(core->input_dev, EV_SW,  SW_HALL_LEFT);
+	/*input_set_capability(core->input_dev, EV_SW,  SW_HALL_LEFT);*/
 	input_set_capability(core->input_dev, EV_KEY, KEY_F1); /*key left*/
-	input_set_capability(core->input_dev, EV_SW,  SW_HALL_RIGHT);
+	/*input_set_capability(core->input_dev, EV_SW,  SW_HALL_RIGHT);*/
 	input_set_capability(core->input_dev, EV_KEY, KEY_F2); /*key right*/
+	input_set_capability(core->input_dev, EV_KEY, KEY_F3); /*hall left open*/
+	input_set_capability(core->input_dev, EV_KEY, KEY_F4); /*hall left close*/
+	input_set_capability(core->input_dev, EV_KEY, KEY_F5); /*hall right open*/
+	input_set_capability(core->input_dev, EV_KEY, KEY_F6); /*hall right close*/
 	input_set_capability(core->input_dev, EV_SYN, SYN_REPORT);
 
 	ret = input_register_device(core->input_dev);
@@ -197,10 +211,11 @@ input_reg_err:
 	return ret;
 }
 
+#if 0
 static int set_hardware_debounce(struct gamekey_core *core)
 {
 	struct gpio *gpio_info = core->hw.gpio_info;
-	int i, ret;
+	int i, ret = 0;
 
 	for (i = 0; i < 4; i++, gpio_info++) {
 		ret = gpio_set_debounce(gpio_info->gpio, core->hw.debounce_time);
@@ -216,13 +231,14 @@ err_reset:
 		gpio_set_debounce((--gpio_info)->gpio, 0);
 	return ret;
 }
+#endif
 
 /* This function may sleep
  * @return: negative indicate situation unstable
  * */
 static int detect_gpio_status(struct gamekey_core *core, int gpio_nr)
 {
-	int ret, sts;
+	int sts, ret = -1;
 	bool stable = false;
 
 	sts = gpio_get_value(core->hw.gpio_info[gpio_nr].gpio);
@@ -237,16 +253,20 @@ static int detect_gpio_status(struct gamekey_core *core, int gpio_nr)
 	if (!stable) {
 		pr_err("gpio_list[%d] unstable, can't get status", gpio_nr);
 		return -1;
+	// } else {
+	// 	pr_err("gpio_list[%d] running..., sts=%d", gpio_nr, sts);
 	}
 
 	switch(gpio_nr) {
 		case HALL_LEFT:
 		case HALL_RIGHT:
 			ret = (sts == HALL_OUT_LEVEL ? 1 : 0);
+			// pr_err("HALL is running...,ret = %d", ret);
 		break;
 		case GAMEKEY_LEFT:
 		case GAMEKEY_RIGHT:
 			ret = (sts == KEY_DOWN_LEVEL? 1 : 0);
+			// pr_err("KEY is running...,ret = %d", ret);
 		break;
 	};
 
@@ -256,7 +276,7 @@ static int detect_gpio_status(struct gamekey_core *core, int gpio_nr)
 static int detect_gpio_status_timeout(struct gamekey_core *core,
 		int gpio_nr, int ms)
 {
-	int sts;
+	int sts = -1;
 	u64 timeout = get_jiffies_64() + msecs_to_jiffies(ms);
 
 	while (time_is_after_jiffies64(timeout)) {
@@ -270,7 +290,6 @@ static int detect_gpio_status_timeout(struct gamekey_core *core,
 	return sts;
 }
 
-
 static irqreturn_t hall_left_handler(int irq, void *data)
 {
 	struct gamekey_core *core = data;
@@ -278,13 +297,28 @@ static irqreturn_t hall_left_handler(int irq, void *data)
 
 	core->sts[HALL_LEFT] = detect_gpio_status(core, HALL_LEFT);
 	if (core->sts[HALL_LEFT] >= 0) {
-		input_report_switch(input_dev, SW_HALL_LEFT, core->sts[HALL_LEFT]);
-		input_sync(core->input_dev);
+		if (core->sts[HALL_LEFT] == 1) {
+			timeout_left = get_jiffies_64();
+			schedule_delayed_work(&open_close_check_left, msecs_to_jiffies(DELAYTIME_HALL_REPORT));
+
+		} else {
+			timeout_left = get_jiffies_64()- timeout_left;
+			if (jiffies_to_msecs(timeout_left)<ABNORMAL_TIME_INTERVAL) {
+				cancel_delayed_work_sync(&open_close_check_left);
+			} else {
+				input_event(input_dev, EV_KEY, KEY_F4, 1);
+				input_sync(core->input_dev);
+				input_event(input_dev, EV_KEY, KEY_F4, 0);
+				input_sync(core->input_dev);
+				pr_info("%s-hall left close",__func__);
+			}
+		}
+
 		core->event_update = true;
 		wake_up_interruptible(&event_wait);
 	}
 
-	pr_debug("%s, sts = %d", __func__, core->sts[HALL_LEFT]);
+	pr_info("%s, sts = %d", __func__, core->sts[HALL_LEFT]);
 	return IRQ_HANDLED;
 }
 
@@ -295,13 +329,27 @@ static irqreturn_t hall_right_handler(int irq, void *data)
 
 	core->sts[HALL_RIGHT] = detect_gpio_status(core, HALL_RIGHT);
 	if (core->sts[HALL_RIGHT] >= 0) {
-		input_report_switch(input_dev, SW_HALL_RIGHT, core->sts[HALL_RIGHT]);
-		input_sync(core->input_dev);
+		if (core->sts[HALL_RIGHT] == 1) {
+			timeout_right = get_jiffies_64();
+			schedule_delayed_work(&open_close_check_right, msecs_to_jiffies(DELAYTIME_HALL_REPORT));
+		} else {
+			timeout_right = get_jiffies_64()- timeout_right;
+			if (jiffies_to_msecs(timeout_right)<ABNORMAL_TIME_INTERVAL) {
+				cancel_delayed_work_sync(&open_close_check_right);
+			} else {
+				input_event(input_dev, EV_KEY, KEY_F6, 1);
+				input_sync(core->input_dev);
+				input_event(input_dev, EV_KEY, KEY_F6, 0);
+				input_sync(core->input_dev);
+				pr_info("%s-hall right close",__func__);
+			}
+        }
+
 		core->event_update = true;
 		wake_up_interruptible(&event_wait);
 	}
 
-	pr_debug("%s, sts = %d", __func__, core->sts[HALL_RIGHT]);
+	pr_info("%s, sts = %d", __func__, core->sts[HALL_RIGHT]);
 	return IRQ_HANDLED;
 }
 
@@ -318,7 +366,7 @@ static irqreturn_t key_left_handler(int irq, void *data)
 		wake_up_interruptible(&event_wait);
 	}
 
-	pr_debug("%s, sts = %d", __func__, core->sts[GAMEKEY_LEFT]);
+	pr_info("%s, sts = %d", __func__, core->sts[GAMEKEY_LEFT]);
 	return IRQ_HANDLED;
 }
 
@@ -335,13 +383,13 @@ static irqreturn_t key_right_handler(int irq, void *data)
 		wake_up_interruptible(&event_wait);
 	}
 
-	pr_debug("%s, sts = %d", __func__, core->sts[GAMEKEY_RIGHT]);
+	pr_info("%s, sts = %d", __func__, core->sts[GAMEKEY_RIGHT]);
 	return IRQ_HANDLED;
 }
 
 static int pinctrl_init(struct gamekey_core *core)
 {
-	int ret;
+	int ret = 0;
 
 	core->gamekey_pinctrl = devm_pinctrl_get(core->dev);
 	if (IS_ERR_OR_NULL(core->gamekey_pinctrl)) {
@@ -374,7 +422,7 @@ pinctrl_err:
 
 static int gpio_init(struct gamekey_core *core)
 {
-	int ret;
+	int ret = 0;
 	struct hw_info *hw = &core->hw;
 
 	ret = gpio_request_array(hw->gpio_info, GPIO_MAX);
@@ -387,6 +435,7 @@ static int gpio_init(struct gamekey_core *core)
 	set_hardware_debounce(core);
 	pr_info("hardware debounce: %d", hw->hw_debounce);
 	*/
+	hw->hw_debounce = false;
 
 	ret = pinctrl_init(core);
 	if (ret) {
@@ -413,7 +462,7 @@ gpio_err:
 
 static int irq_init(struct gamekey_core *core)
 {
-	int ret;
+	int ret = -1;
 	struct hw_info *hw = &core->hw;
 
 	hw->hall_l_irq = gpio_to_irq(hw->gpio_info[0].gpio);
@@ -431,6 +480,7 @@ static int irq_init(struct gamekey_core *core)
 			pr_err("request irq handler for hall left failed, ret = %d", ret);
 			goto hl_err;
 		}
+		enable_irq_wake(hw->hall_l_irq);
 
 		ret = request_threaded_irq(hw->hall_r_irq, NULL, hall_right_handler,
 				IRQF_TRIGGER_RISING| IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
@@ -439,6 +489,7 @@ static int irq_init(struct gamekey_core *core)
 			pr_err("request irq handler for hall right failed, ret = %d", ret);
 			goto hr_err;
 		}
+		enable_irq_wake(hw->hall_r_irq);
 
 		ret = request_threaded_irq(hw->key_l_irq, NULL, key_left_handler,
 				IRQF_TRIGGER_RISING| IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
@@ -447,6 +498,7 @@ static int irq_init(struct gamekey_core *core)
 			pr_err("request irq handler for key left failed, ret = %d", ret);
 			goto kl_err;
 		}
+		enable_irq_wake(hw->key_l_irq);
 
 		ret = request_threaded_irq(hw->key_r_irq, NULL, key_right_handler,
 				IRQF_TRIGGER_RISING| IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
@@ -455,7 +507,7 @@ static int irq_init(struct gamekey_core *core)
 			pr_err("request irq handler for key right failed, ret = %d", ret);
 			goto kr_err;
 		}
-
+		enable_irq_wake(hw->key_r_irq);
 	} else {
 		pr_err("irq number illegal, hall left: %d,\
 				hall right: %d, key left: %d, key right: %d", \
@@ -477,6 +529,40 @@ irqno_err:
 	return ret;
 }
 
+static int power_init(struct gamekey_core *core)
+{
+	int ret = -1;
+	struct regulator *vreg;
+	struct device *dev = core->dev;
+
+	pr_info("Try to enable gamekey_vreg\n");
+	vreg = regulator_get(dev, "gamekey_vreg");
+	if (vreg == NULL) {
+		pr_err("gamekey_vreg regulator get failed!\n");
+		goto rg_err;
+	}
+
+	if (regulator_is_enabled(vreg)) {
+		pr_info("gamekey_vreg is already enabled!\n");
+	} else {
+		ret = regulator_enable(vreg);
+		if (ret) {
+			pr_err("error enabling gamekey_vreg!\n");
+			vreg = NULL;
+			goto rg_err;
+		}
+	}
+
+	ret = regulator_get_voltage(vreg);
+	pr_info("%s regulator_value %d!\n", __func__,ret);
+
+	pr_info("power init successful");
+	return 0;
+
+rg_err:
+	return -1;
+}
+
 static int get_status_after_boot(struct gamekey_core *core)
 {
 	int i;
@@ -485,22 +571,75 @@ static int get_status_after_boot(struct gamekey_core *core)
 	for (i = 0; i < GPIO_MAX; i++)
 		core->sts[i] = (char)detect_gpio_status_timeout(core, i, 500);
 
+	/*
 	input_report_switch(input_dev, SW_HALL_LEFT, core->sts[HALL_LEFT]);
 	input_report_switch(input_dev, SW_HALL_RIGHT, core->sts[HALL_RIGHT]);
+	*/
+	if (core->sts[HALL_LEFT] == 1) {
+		input_event(input_dev, EV_KEY, KEY_F3, 1);
+		input_sync(core->input_dev);
+		input_event(input_dev, EV_KEY, KEY_F3, 0);
+		input_sync(core->input_dev);
+		pr_info("%s-hall left open",__func__);
+	} else {
+		input_event(input_dev, EV_KEY, KEY_F4, 1);
+		input_sync(core->input_dev);
+		input_event(input_dev, EV_KEY, KEY_F4, 0);
+		input_sync(core->input_dev);
+		pr_info("%s-hall left close",__func__);
+	}
+
+	if (core->sts[HALL_RIGHT] == 1) {
+		input_event(input_dev, EV_KEY, KEY_F5, 1);
+		input_sync(core->input_dev);
+		input_event(input_dev, EV_KEY, KEY_F5, 0);
+		input_sync(core->input_dev);
+		pr_info("%s-hall right open",__func__);
+	} else {
+		input_event(input_dev, EV_KEY, KEY_F6, 1);
+		input_sync(core->input_dev);
+		input_event(input_dev, EV_KEY, KEY_F6, 0);
+		input_sync(core->input_dev);
+		pr_info("%s-hall right close",__func__);
+	}
+
 	input_event(input_dev, EV_KEY, KEY_F1, core->sts[GAMEKEY_LEFT]);
 	input_event(input_dev, EV_KEY, KEY_F2, core->sts[GAMEKEY_RIGHT]);
 	input_sync(core->input_dev);
 
-	pr_debug("%s, Left H:%d, K:%d   Righ H:%d, K:%d",
+	pr_info("%s, Left H:%d, K:%d   Righ H:%d, K:%d",
 				__func__, core->sts[HALL_LEFT], core->sts[GAMEKEY_LEFT],
 					core->sts[HALL_RIGHT], core->sts[GAMEKEY_RIGHT]);
 
 	return 0;
 }
 
+
+static void game_open_close_check_left(struct work_struct *work)
+{
+	struct input_dev *input_dev = g_core->input_dev;
+
+	input_event(input_dev, EV_KEY, KEY_F3, 1);
+	input_sync(input_dev);
+	input_event(input_dev, EV_KEY, KEY_F3, 0);
+	input_sync(input_dev);
+	pr_info("%s-hall left open",__func__);
+}
+
+static void game_open_close_check_right(struct work_struct *work)
+{
+	struct input_dev *input_dev = g_core->input_dev;
+
+	input_event(input_dev, EV_KEY, KEY_F5, 1);
+	input_sync(input_dev);
+	input_event(input_dev, EV_KEY, KEY_F5, 0);
+	input_sync(input_dev);
+	pr_info("%s-hall right open",__func__);
+}
+
 static int __init gamekey_probe(struct platform_device *pdev)
 {
-	int ret;
+	int ret = 0;
 	struct gamekey_core *core;
 
 	core = kzalloc(sizeof(*core), GFP_KERNEL);
@@ -513,6 +652,9 @@ static int __init gamekey_probe(struct platform_device *pdev)
 	core->pdev = pdev;
 	core->dev = &pdev->dev;
 	platform_set_drvdata(pdev, core);
+
+	INIT_DELAYED_WORK(&open_close_check_left, game_open_close_check_left);
+	INIT_DELAYED_WORK(&open_close_check_right, game_open_close_check_right);
 
 	ret = parse_dt(core);
 
@@ -532,6 +674,11 @@ static int __init gamekey_probe(struct platform_device *pdev)
 	if (ret) {
 		pr_err("irq init failed, exiting probe...");
 		goto irq_err;
+	}
+
+	ret = power_init(core);
+	if (ret) {
+		pr_err("power_init failed, may cause gamekey function abnormally!");
 	}
 
 	get_status_after_boot(core);
@@ -564,7 +711,7 @@ input_err:
 	return ret;
 }
 
-static void __exit gamekey_remove(struct platform_device *pdev)
+static int __exit gamekey_remove(struct platform_device *pdev)
 {
 	struct gamekey_core *core = platform_get_drvdata(pdev);
 	misc_deregister(core->misc);
@@ -578,6 +725,7 @@ static void __exit gamekey_remove(struct platform_device *pdev)
 	input_free_device(core->input_dev);
 
 	pr_info("gamekey remove done");
+	return 0;
 }
 
 static const struct of_device_id dt_match[] = {
