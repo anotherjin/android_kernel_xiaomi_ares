@@ -303,7 +303,7 @@ static int mtk_scp_ultra_engine_state_set(struct snd_kcontrol *kcontrol,
 	int old_usnd_state = scp_ultra->usnd_state;
 	bool ret_val = false;
 
-	if (val < SCP_ULTRA_STATE_IDLE || val > SCP_ULTRA_STATE_RECOVERY) {
+	if (val < SCP_ULTRA_STATE_IDLE || val > SCP_ULTRA_STATE_OFF) {
 		pr_info("%s() unexpected state, ignore\n", __func__);
 		return -1;
 	}

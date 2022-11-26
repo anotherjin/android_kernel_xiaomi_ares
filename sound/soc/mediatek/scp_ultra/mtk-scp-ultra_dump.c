@@ -152,7 +152,7 @@ void ultra_stop_engine_thread(void)
 	kfree(dump_queue);
 	dump_queue = NULL;
 	ultra_close_dump_file();
-	aud_wake_unlock(&wakelock_ultra_dump_lock);
+	//aud_wake_unlock(&wakelock_ultra_dump_lock);
 }
 
 int ultra_open_dump_file(void)

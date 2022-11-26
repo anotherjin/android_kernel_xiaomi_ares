@@ -68,6 +68,12 @@ static int scp_ultra_pcm_dev_probe(struct platform_device *pdev)
 		pr_info("%s scp_ultra_ul_memif_id error\n", __func__);
 		return 0;
 	}
+	scp_ultra->ultra_dump.dump_ops =
+			devm_kzalloc(&pdev->dev,
+					sizeof(struct scp_ultra_dump_ops),
+					GFP_KERNEL);
+	if (!scp_ultra->ultra_dump.dump_ops)
+		return -ENOMEM;
 	/*  register dsp dai driver*/
 	scp_ultra->mtk_scp_hardware = &scp_ultra_hardware;
 	scp_ultra->dev = &pdev->dev;
@@ -92,6 +98,8 @@ static int scp_ultra_pcm_dev_probe(struct platform_device *pdev)
 		dev_warn(&pdev->dev, "err_platform\n");
 		goto err_platform;
 	}
+	
+	set_ipi_recv_private((void *)scp_ultra);
 	set_scp_ultra_base((void *)scp_ultra);
 
 	return 0;

@@ -9,14 +9,19 @@
 #include <linux/compat.h>
 #include "scp_helper.h"
 #include "scp_ipi.h"
+#include "audio_ipi_platform.h"
 //#include "audio_ultra_msg_id.h"
 #include "ultra_ipi.h"
+#include "audio_task_manager.h"
 #include "mtk-base-afe.h"
+#include "mtk-scp-ultra-platform-mem-control.h"
+
 
 
 /* don't use this directly if not necessary */
 static struct mtk_base_scp_ultra *local_base_scp_ultra;
 static struct mtk_base_afe *local_scp_ultra_afe;
+static void *ipi_recv_private;
 
 int ultra_set_afe_base(struct mtk_base_afe *afe)
 {
@@ -56,6 +61,24 @@ void *get_scp_ultra_base(void)
 		pr_err("%s(), local_base_scp_ultra is NULL", __func__);
 
 	return local_base_scp_ultra;
+}
+
+void *ultra_get_ipi_recv_private(void)
+{
+	if (!ipi_recv_private)
+		pr_info("%s(), ipi_recv_private is NULL", __func__);
+
+	return ipi_recv_private;
+}
+
+void ultra_set_ipi_recv_private(void *priv)
+{
+	pr_debug("%s()\n", __func__);
+
+	if (!ipi_recv_private)
+		ipi_recv_private = priv;
+	else
+		pr_info("%s() has been set\n", __func__);
 }
 
 void set_afe_dl_irq_target(int scp_enable)

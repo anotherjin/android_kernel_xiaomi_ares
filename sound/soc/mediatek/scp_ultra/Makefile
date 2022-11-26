@@ -1,13 +1,23 @@
 # SPDX-License-Identifier: GPL-2.0
 
 # MTK Platform Support
+ifeq ($(CONFIG_MACH_MT6893),y)
+
+MTK_PLATFORM := mt6885
+
+else
 
 MTK_PLATFORM := $(subst ",,$(CONFIG_MTK_PLATFORM))
+
+endif
 
 ifeq ($(CONFIG_MTK_ULTRASND_PROXIMITY),y)
 subdir-ccflags-y += -I$(srctree)/sound/soc/mediatek/common
 subdir-ccflags-y += -I$(srctree)/sound/soc/mediatek/utility
 subdir-ccflags-y += -I$(srctree)/sound/soc/mediatek/$(MTK_PLATFORM)/
+subdir-ccflags-y += -I$(srctree)/sound/soc/mediatek/scp_ultra/$(MTK_PLATFORM)/
+subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/audio_ipi/common/framework
+subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/audio_ipi/common/utility
 
 #compatible
 ifneq (,$(filter $(CONFIG_MTK_PLATFORM), "mt6785" "mt6781"))
@@ -18,6 +28,8 @@ ccflags-y += -I$(srctree)/sound/soc/mediatek/scp_ultra/ultra_ipi
 obj-$(CONFIG_MTK_ULTRASND_PROXIMITY) += ultra_ipi/
 endif
 endif
+
+obj-y += $(MTK_PLATFORM)/
 
 ifeq ($(CONFIG_MTK_TINYSYS_SCP_SUPPORT),y)
 subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/scp/$(CONFIG_MTK_PLATFORM)
