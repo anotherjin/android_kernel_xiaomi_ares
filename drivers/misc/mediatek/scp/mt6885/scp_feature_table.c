@@ -112,14 +112,6 @@ struct scp_feature_tb feature_table[NUM_FEATURE_ID] = {
 		.sys_id         = SCPSYS_CORE0,
 	},
 #endif
-#ifdef CONFIG_MTK_ULTRASND_PROXIMITY
-	{
-		.feature        = ULTRA_FEATURE_ID,
-		.freq           = 200,
-		.enable         = 0,
-		.sys_id         = SCPSYS_CORE0,
-	},
-#endif
 };
 
 /*scp sensor type list*/

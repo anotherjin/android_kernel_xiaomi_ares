@@ -43,8 +43,6 @@
 #define PIN_IN_SIZE_AUDIO_ULTRA_SND_0	 5 /* the following will use mbox 1 */
 #define PIN_IN_SIZE_AUDIO_ULTRA_SND_ACK_0 2
 #define PIN_IN_SIZE_ALS_CALI_0	         2 /* the following will use mbox 1 */
-#define PIN_IN_SIZE_AUDIO_ULTRA_SND_0	 5 /* the following will use mbox 1 */
-#define PIN_IN_SIZE_AUDIO_ULTRA_SND_ACK_0 2
 /* ============================================================ */
 
 /* core1 */
