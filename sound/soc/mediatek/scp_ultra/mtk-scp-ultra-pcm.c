@@ -56,18 +56,6 @@ static int scp_ultra_pcm_dev_probe(struct platform_device *pdev)
 	if (!scp_ultra)
 		return -ENOMEM;
 
-	ret = of_property_read_u32(pdev->dev.of_node, "scp_ultra_dl_memif_id",
-				   &scp_ultra->scp_ultra_dl_memif_id);
-	if (ret != 0) {
-		pr_info("%s scp_ultra_dl_memif_id error\n", __func__);
-		return 0;
-	}
-	ret = of_property_read_u32(pdev->dev.of_node, "scp_ultra_ul_memif_id",
-				   &scp_ultra->scp_ultra_ul_memif_id);
-	if (ret != 0) {
-		pr_info("%s scp_ultra_ul_memif_id error\n", __func__);
-		return 0;
-	}
 	scp_ultra->ultra_dump.dump_ops =
 			devm_kzalloc(&pdev->dev,
 					sizeof(struct scp_ultra_dump_ops),
