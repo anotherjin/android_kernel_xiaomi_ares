@@ -125,10 +125,10 @@ int mtk_scp_ultra_allocate_mem(struct snd_pcm_substream *substream,
 	int buf_offset;
 	int ret;
 
-	if (id == scp_ultra->scp_ultra_dl_memif_id) {
+	if (id == get_scp_ultra_memif_id(SCP_ULTRA_DL_DAI_ID)) {
 		ultra_dma_buf = &ultra_mem->ultra_dl_dma_buf;
 		buf_offset = ULTRA_BUF_OFFSET;
-	} else if (id == scp_ultra->scp_ultra_ul_memif_id) {
+	} else if (id == get_scp_ultra_memif_id(SCP_ULTRA_UL_DAI_ID)) {
 		ultra_dma_buf = &ultra_mem->ultra_ul_dma_buf;
 		buf_offset = ULTRA_BUF_OFFSET * 2;
 	}  else {

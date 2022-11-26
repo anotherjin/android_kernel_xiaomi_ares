@@ -310,9 +310,9 @@ static int mtk_scp_ultra_engine_state_set(struct snd_kcontrol *kcontrol,
 	scp_ultra->usnd_state = val;
 
 	scp_ultra_memif_dl_id =
-		scp_ultra->scp_ultra_dl_memif_id;
+		get_scp_ultra_memif_id(SCP_ULTRA_DL_DAI_ID);
 	scp_ultra_memif_ul_id =
-		scp_ultra->scp_ultra_ul_memif_id;
+		get_scp_ultra_memif_id(SCP_ULTRA_UL_DAI_ID);
 	ultra_mem->ultra_dl_memif_id = scp_ultra_memif_dl_id;
 	ultra_mem->ultra_ul_memif_id = scp_ultra_memif_ul_id;
 	pr_info("%s() new state=%d, memdl=%d, memul=%d\n",
@@ -469,9 +469,9 @@ static int mtk_scp_ultra_pcm_open(struct snd_pcm_substream *substream)
 	struct mtk_base_scp_ultra_mem *ultra_mem = &scp_ultra->ultra_mem;
 	struct mtk_base_afe *afe = ultra_get_afe_base();
 	int scp_ultra_memif_dl_id =
-		scp_ultra->scp_ultra_dl_memif_id;
+		get_scp_ultra_memif_id(SCP_ULTRA_DL_DAI_ID);
 	int scp_ultra_memif_ul_id =
-		scp_ultra->scp_ultra_ul_memif_id;
+		get_scp_ultra_memif_id(SCP_ULTRA_UL_DAI_ID);
 
 	ultra_mem->ultra_dl_memif_id = scp_ultra_memif_dl_id;
 	ultra_mem->ultra_ul_memif_id = scp_ultra_memif_ul_id;
